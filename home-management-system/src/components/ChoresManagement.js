@@ -2,18 +2,26 @@ import React, { useState } from 'react';
 import './ChoresManagement.css';
 
 const ChoresManagement = () => {
+    const roommates = ['John', 'Alex', 'Emily', 'Sarah']; // Predefined list of roommates
     const [choreName, setChoreName] = useState('');
-    const [assignee, setAssignee] = useState('');
+    const [assignees, setAssignees] = useState([]); // State for multiple assignees
     const [frequency, setFrequency] = useState('Daily');
     const [chores, setChores] = useState([]);
 
     const handleAddChore = (e) => {
         e.preventDefault();
-        const newChore = { choreName, assignee, frequency };
+        const newChore = { choreName, assignees, frequency };
         setChores([...chores, newChore]);
         setChoreName('');
-        setAssignee('');
+        setAssignees([]); // Reset assignees
         setFrequency('Daily');
+    };
+
+    const handleCheckboxChange = (e) => {
+        const { value, checked } = e.target;
+        setAssignees((prevAssignees) =>
+            checked ? [...prevAssignees, value] : prevAssignees.filter((assignee) => assignee !== value)
+        );
     };
 
     return (
@@ -31,14 +39,20 @@ const ChoresManagement = () => {
                         />
                     </div>
                     <div className="input-field">
-                        <label>Assignee</label>
-                        <input 
-                            type="text" 
-                            value={assignee} 
-                            onChange={(e) => setAssignee(e.target.value)} 
-                            required 
-                            placeholder="e.g., John, Alex"
-                        />
+                        <label>Assignees</label>
+                        <div className="checkbox-group">
+                            {roommates.map((roommate, index) => (
+                                <label key={index} className="checkbox-label">
+                                    <input 
+                                        type="checkbox" 
+                                        value={roommate} 
+                                        checked={assignees.includes(roommate)}
+                                        onChange={handleCheckboxChange} 
+                                    />
+                                    {roommate}
+                                </label>
+                            ))}
+                        </div>
                     </div>
                     <div className="input-field">
                         <label>Frequency</label>
@@ -59,7 +73,7 @@ const ChoresManagement = () => {
                     <ul>
                         {chores.map((chore, index) => (
                             <li key={index}>
-                                <strong>{chore.choreName}</strong> - {chore.assignee} ({chore.frequency})
+                                <strong>{chore.choreName}</strong> - {chore.assignees.join(', ')} ({chore.frequency})
                             </li>
                         ))}
                     </ul>

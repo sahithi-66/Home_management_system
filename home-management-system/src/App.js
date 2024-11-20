@@ -7,9 +7,9 @@ import ChoresManagement from './components/ChoresManagement';
 const App = () => {
     return (
         <div className="App">
-            {/* <Login /> */}
-            {/* <ExpenditureSplit /> */}
-            {/* <NoticeBoard /> */}
+            {/* { <Login /> } */}
+            { <ExpenditureSplit /> }
+            { <NoticeBoard /> }
             <ChoresManagement />
 
         </div>
