@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
 import './Login.css';
 
-const Login = () => {
+const Login = ({ onLoginSuccess }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
     const handleLogin = (e) => {
         e.preventDefault();
-        console.log("Username:", username);
-        console.log("Password:", password);
+        // Mock authentication (replace with real authentication logic)
+        if (username === 'admin' && password === 'password') {
+            console.log('Login successful!');
+            onLoginSuccess(); // Call the success handler from props
+        } else {
+            alert('Invalid username or password');
+        }
     };
 
     return (
