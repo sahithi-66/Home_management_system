@@ -227,4 +227,3 @@ kill -9 <PID>
 4. Create a pull request
 
 ## License
-[Add your license information here]
