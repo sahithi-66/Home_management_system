@@ -1,4 +1,3 @@
-// src/controllers/NoticeController.js
 import NoticeService from '../services/NoticeService.js';
 
 class NoticeController {
