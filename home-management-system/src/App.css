@@ -1,65 +1,73 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+/* Header styles using Grid */
+.header {
+  display: grid;
+  grid-template-columns: auto 1fr; /* Left side auto-sizes, right side takes remaining space */
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.tabs {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.tabs button {
+  background-color: #6200ea;
+  color: #fff;
   padding: 10px 20px;
-  border: 1px solid #ccc;
-  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  gap: 20px; /* Space between sections */
+}
+
+/* Left section for tabs */
+.header-left {
+  display: flex; /* Flex ensures tab buttons are in a row */
+  gap: 10px; /* Space between tabs */
+}
+
+/* Right section for username and logout button */
+.header-right {
+  display: flex; /* Flex aligns items within this grid area */
+  align-items: center; /* Center vertically */
+  gap: 15px; /* Space between welcome message and button */
+}
+
+/* Logout container styles */
+.logout-container {
+  position: absolute; /* Position relative to the parent */
+  top: 10px; /* Distance from the top */
+  right: 20px; /* Distance from the right */
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Spacing between welcome message and button */
+}
+
+/* Logout button */
+.logout-btn {
+  background-color: #e91e63;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
   cursor: pointer;
+  display: inline-block; /* Prevent stretching */
 }
 
-.tabs button:hover {
-  background-color: #eaeaea;
+.logout-btn:hover {
+  background-color: #d81b60;
 }
 
-.tabs button:focus {
-  outline: none;
+
+/* Tab button styles */
+.tab-btn {
+  background-color: #eeeeee;
+  border: 1px solid #cccccc;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: auto; /* Ensure button fits content */
+  display: inline-block; /* Prevent full-width behavior */
 }
 
-.tab-content {
-  border: 1px solid #ccc;
-  padding: 20px;
-  background-color: #fff;
+.tab-btn:hover {
+  background-color: #ddd;
+}
+
+.tab-btn.active {
+  background-color: #6200ea;
+  color: #ffffff;
+  font-weight: bold;
 }

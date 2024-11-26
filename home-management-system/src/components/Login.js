@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import './Login.css';
 
-const Login = ({ onLoginSuccess }) => {
-    const [username, setUsername] = useState('');
+const Login = ({ onLoginSuccess, setUsername }) => {
+    const [localUsername, setLocalUsername] = useState('');
     const [password, setPassword] = useState('');
 
     const handleLogin = (e) => {
         e.preventDefault();
         // Mock authentication (replace with real authentication logic)
-        if (username === 'admin' && password === 'password') {
+        if (localUsername === 'admin' && password === 'password') {
             console.log('Login successful!');
+            setUsername(localUsername);
             onLoginSuccess(); // Call the success handler from props
         } else {
             alert('Invalid username or password');
@@ -26,8 +27,8 @@ const Login = ({ onLoginSuccess }) => {
                         <label>Username</label>
                         <input 
                             type="text" 
-                            value={username} 
-                            onChange={(e) => setUsername(e.target.value)} 
+                            value={localUsername} 
+                            onChange={(e) => setLocalUsername(e.target.value)} 
                             required 
                         />
                     </div>
