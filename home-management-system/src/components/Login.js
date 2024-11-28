@@ -5,15 +5,27 @@ const Login = ({ onLoginSuccess, setUsername }) => {
     const [localUsername, setLocalUsername] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        // Mock authentication (replace with real authentication logic)
-        if (localUsername === 'admin' && password === 'password') {
-            console.log('Login successful!');
-            setUsername(localUsername);
-            onLoginSuccess(); // Call the success handler from props
-        } else {
-            alert('Invalid username or password');
+        try {
+            const response = await fetch('http://localhost:3000/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username: localUsername, password }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem('token', data.token); // Save the token
+                setUsername(localUsername);
+                onLoginSuccess();
+            } else {
+                alert('Invalid username or password');
+            }
+        } catch (error) {
+            console.error('Login failed:', error);
         }
     };
 
