@@ -15,9 +15,12 @@ const NoticeBoard = () => {
     };
 
     return (
-        <div className="noticeboard-wrapper">
-            <div className="noticeboard-container">
+        <div className="root-wrapper">
+            <div class="title-box">
                 <h2>Common Notice Board</h2>
+            </div>
+        <div className="notice-wrapper">
+            <div className="notice-container">
                 <form onSubmit={handleAddAnnouncement}>
                     <div className="input-field">
                         <label>Title</label>
@@ -52,6 +55,7 @@ const NoticeBoard = () => {
                     </ul>
                 </div>
             </div>
+        </div>
         </div>
     );
 };

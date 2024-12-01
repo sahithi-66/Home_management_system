@@ -60,9 +60,12 @@ const ChoresManagement = () => {
     };
 
     return (
-        <div className="chores-wrapper">
-            <div className="chores-container">
+        <div className="root-wrapper">
+            <div class="title-box">
                 <h2>Roommate Chores Management</h2>
+            </div>
+            <div className="chores-wrapper">
+            <div className="chores-container">
                 <form onSubmit={handleAddChore}>
                     <div className="input-field">
                         <label>Chore Name</label>
@@ -104,7 +107,7 @@ const ChoresManagement = () => {
                 </form>
             </div>
 
-            <div className="chores-content">
+            <div className="chores-container">
                 <div className="actions">
                 <button
                     onClick={fetchAllChores}
@@ -129,7 +132,8 @@ const ChoresManagement = () => {
                     </ul>
                 </div>
             )}
-
+            </div>
+            <div className="chores-container">
                 <div className="chore-schedule">
                     <h3>Get Chore Schedule</h3>
                     <div className="input-field">
@@ -156,6 +160,7 @@ const ChoresManagement = () => {
                         </ul>
                     </div>
                 </div>
+            </div>
             </div>
         </div>
     );

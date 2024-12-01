@@ -193,8 +193,12 @@ const ExpenditureSplit = () => {
     };
 
     return (
-        <div className="expenditure-split">
+        <div className="root-wrapper">
+        <div class="title-box">
             <h2>Expense Split</h2>
+        </div>
+        <div className="expense-wrapper">
+            <div className="expense-container">
             <form onSubmit={handleAddExpense}>
                 <div>
                     <label>Expense Name</label>
@@ -343,6 +347,8 @@ const ExpenditureSplit = () => {
                     ))}
                 </ul>
             )}
+        </div>
+        </div>
         </div>
     );
 };

@@ -104,7 +104,7 @@ const App = () => {
 
           {/* Logout button at the top-right */}
           <div className="logout-container">
-            <span>Welcome, {username}!</span>
+            {/*<span>Welcome, {username}!</span>*/}
             
           </div>
 
