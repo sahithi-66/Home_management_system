@@ -2,6 +2,22 @@
 CREATE DATABASE IF NOT EXISTS home_management;
 USE home_management;
 
+
+-- Users table (basic authentication)
+CREATE TABLE IF NOT EXISTS users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,  -- 255 for hashed passwords
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_username (username)
+);
+
+-- Add sample users
+INSERT INTO users (username, password) VALUES
+('user1', 'password123'),
+('user2', 'password123');
+
 -- Notice board table
 CREATE TABLE IF NOT EXISTS notices (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -97,6 +113,7 @@ CREATE TABLE IF NOT EXISTS grocery_history (
 );
 
 
+DROP INDEX IF EXISTS ft_search ON notices;
 ALTER TABLE notices ADD FULLTEXT INDEX ft_search (title, content);
 
 -- Add some sample data

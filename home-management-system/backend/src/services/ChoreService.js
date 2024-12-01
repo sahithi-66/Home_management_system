@@ -1,70 +1,72 @@
-// src/services/ChoreService.js
 import Chore from '../models/Chore.js';
 
 class ChoreService {
-    constructor() {
-      this.chores = [];
+    async createChore(choreData) {
+        if (!choreData.title) {
+            throw new Error('Title is required');
+        }
+        return await Chore.create(choreData);
     }
-  
-    addChore({ choreName, roommates, scheduleType }) {
-      const schedule = {
-        id: Date.now(),
-        choreName,
-        roommates,
-        scheduleType,
-        currentIndex: 0, // Start rotation with the first roommate
-        nextOccurrence: this.getNextOccurrence(scheduleType),
-      };
-  
-      this.chores.push(schedule);
-      return schedule;
+
+    async createChoreWithSchedule(choreData, scheduleData) {
+        if (!choreData.title || !scheduleData.scheduleType || !scheduleData.roommates) {
+            throw new Error('Missing required fields');
+        }
+
+        if (!['DAILY', 'WEEKLY', 'MONTHLY'].includes(scheduleData.scheduleType.toUpperCase())) {
+            throw new Error('Invalid schedule type');
+        }
+
+        scheduleData.scheduleType = scheduleData.scheduleType.toUpperCase();
+        
+        return await Chore.createWithSchedule(choreData, scheduleData);
     }
-  
-    getAllChores() {
-      return this.chores.map((chore) => ({
-        ...chore,
-        currentAssignee: chore.roommates[chore.currentIndex],
-      }));
+
+    async getAllChores() {
+        return await Chore.findAll();
     }
-  
-    getScheduleForChore(choreId) {
-      const chore = this.chores.find((c) => c.id === choreId);
-      if (!chore) {
-        return [];
-      }
-  
-      const scheduleRows = [];
-      let currentIndex = chore.currentIndex;
-      let nextOccurrence = new Date(chore.nextOccurrence);
-  
-      for (let i = 0; i < 10; i++) {
-        scheduleRows.push({
-          date: nextOccurrence,
-          assignee: chore.roommates[currentIndex],
-        });
-  
-        // Rotate to the next roommate
-        currentIndex = (currentIndex + 1) % chore.roommates.length;
-        nextOccurrence = this.getNextOccurrence(chore.scheduleType, nextOccurrence);
-      }
-  
-      return scheduleRows;
+
+    async getChoreById(id) {
+        const chore = await Chore.findById(id);
+        if (!chore) {
+            throw new Error('Chore not found');
+        }
+        return chore;
     }
-  
-    getNextOccurrence(scheduleType, fromDate = new Date()) {
-      const date = new Date(fromDate);
-      switch (scheduleType) {
-        case "daily":
-          return new Date(date.setDate(date.getDate() + 1));
-        case "weekly":
-          return new Date(date.setDate(date.getDate() + 7));
-        case "monthly":
-          return new Date(date.setMonth(date.getMonth() + 1));
-        default:
-          return date;
-      }
+
+    async updateChore(id, choreData) {
+        const chore = await Chore.findById(id);
+        if (!chore) {
+            throw new Error('Chore not found');
+        }
+        console.log("Crossed Finding Chore part")
+        const success = await Chore.update(id, choreData);
+        if (!success) {
+            throw new Error('Failed to update chore');
+        }
+
+        return await this.getChoreById(id);
     }
-  }
-  
-  module.exports = new ChoreService();
-  
+
+    async deleteChore(id) {
+        const success = await Chore.delete(id);
+        if (!success) {
+            throw new Error('Chore not found');
+        }
+        return true;
+    }
+
+    async getChoreSchedule(id) {
+        const schedule = await Chore.getSchedule(id);
+        if (!schedule) {
+            throw new Error('Chore schedule not found');
+        }
+        return schedule;
+    }
+
+    async rotateChoreAssignment(id) {
+        return await Chore.rotateAssignment(id);
+    }
+}
+
+export default new ChoreService();

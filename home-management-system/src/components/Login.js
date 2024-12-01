@@ -1,61 +1,117 @@
 import React, { useState } from 'react';
+import { 
+    Card, 
+    Form, 
+    Input, 
+    Button, 
+    Typography, 
+    message, 
+    Space 
+} from 'antd';
+import { 
+    UserOutlined, 
+    LockOutlined, 
+    LoginOutlined 
+} from '@ant-design/icons';
 import './Login.css';
 
-const Login = ({ onLoginSuccess, setUsername }) => {
-    const [localUsername, setLocalUsername] = useState('');
-    const [password, setPassword] = useState('');
+const { Title } = Typography;
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
+const Login = ({ onLoginSuccess, setUsername }) => {
+    const [loading, setLoading] = useState(false);
+    const [form] = Form.useForm();
+
+    const handleLogin = async (values) => {
+        setLoading(true);
         try {
             const response = await fetch('http://localhost:3000/api/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username: localUsername, password }),
+                body: JSON.stringify({ 
+                    username: values.username, 
+                    password: values.password 
+                }),
             });
 
             if (response.ok) {
                 const data = await response.json();
-                localStorage.setItem('token', data.token); // Save the token
-                setUsername(localUsername);
+                localStorage.setItem('token', data.token);
+                setUsername(values.username);
+                message.success('Login successful!');
                 onLoginSuccess();
             } else {
-                alert('Invalid username or password');
+                message.error('Invalid username or password');
             }
         } catch (error) {
             console.error('Login failed:', error);
+            message.error('Login failed. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <div className="login-container">
-            <div className="login-box">
-                <h1>Welcome to Home Management</h1>
-                <h2>Login</h2>
-                <form onSubmit={handleLogin}>
-                    <div className="input-field">
-                        <label>Username</label>
-                        <input 
-                            type="text" 
-                            value={localUsername} 
-                            onChange={(e) => setLocalUsername(e.target.value)} 
-                            required 
-                        />
+            <Card className="login-card">
+                <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                    <div style={{ textAlign: 'center' }}>
+                        <Title level={2}>Welcome to Home Management</Title>
+                        <Title level={4}>Login</Title>
                     </div>
-                    <div className="input-field">
-                        <label>Password</label>
-                        <input 
-                            type="password" 
-                            value={password} 
-                            onChange={(e) => setPassword(e.target.value)} 
-                            required 
-                        />
-                    </div>
-                    <button type="submit">Login</button>
-                </form>
-            </div>
+
+                    <Form
+                        form={form}
+                        name="login"
+                        onFinish={handleLogin}
+                        layout="vertical"
+                        size="large"
+                    >
+                        <Form.Item
+                            name="username"
+                            rules={[
+                                { 
+                                    required: true, 
+                                    message: 'Please input your username!' 
+                                }
+                            ]}
+                        >
+                            <Input 
+                                prefix={<UserOutlined />} 
+                                placeholder="Username"
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="password"
+                            rules={[
+                                { 
+                                    required: true, 
+                                    message: 'Please input your password!' 
+                                }
+                            ]}
+                        >
+                            <Input.Password 
+                                prefix={<LockOutlined />} 
+                                placeholder="Password"
+                            />
+                        </Form.Item>
+
+                        <Form.Item>
+                            <Button 
+                                type="primary" 
+                                htmlType="submit" 
+                                icon={<LoginOutlined />}
+                                loading={loading}
+                                block
+                            >
+                                Log in
+                            </Button>
+                        </Form.Item>
+                    </Form>
+                </Space>
+            </Card>
         </div>
     );
 };

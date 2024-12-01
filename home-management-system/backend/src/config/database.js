@@ -12,7 +12,9 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  namedPlaceholders: true
+  namedPlaceholders: true,
+  connectTimeout: 10000,
+  socketPath: '/tmp/mysql.sock'
 });
 
 // Test the connection

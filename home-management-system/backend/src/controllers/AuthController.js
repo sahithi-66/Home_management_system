@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import bcrypt from "bcryptjs"
 
 class AuthController {
     async login(req, res, next) {
@@ -13,6 +14,15 @@ class AuthController {
 
             const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
             res.json({ token });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getAllUsers(req, res, next) {
+        try {
+            const users = await User.findAll();
+            res.json(users);
         } catch (error) {
             next(error);
         }
