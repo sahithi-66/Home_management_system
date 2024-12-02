@@ -104,6 +104,33 @@ INSERT INTO notices (title, content, author_id, is_parcel) VALUES
 ('Welcome to Home Management', 'This is a test notice for all residents', 1, false),
 ('Package Arrived', 'Amazon package for Room 101 at reception', 1, true);
 
+-- Chores table
+CREATE TABLE IF NOT EXISTS chores (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(100) NOT NULL,
+    description TEXT,
+    assigned_to INT,
+    due_date DATE,
+    status ENUM('PENDING', 'IN_PROGRESS', 'COMPLETED') DEFAULT 'PENDING',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_assigned_to (assigned_to),
+    INDEX idx_status (status),
+    INDEX idx_due_date (due_date)
+);
+
+CREATE TABLE IF NOT EXISTS `schedule` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,          -- Unique identifier for the schedule
+    `chore_id` INT NOT NULL,                      -- Foreign key to reference the chore
+    `chore_name` VARCHAR(255) NOT NULL,           -- Name of the chore
+    `assigned_to` VARCHAR(255) NOT NULL,          -- The person assigned to the chore
+    `scheduled_date` DATE NOT NULL,               -- The date when the chore is scheduled
+    `completed` BOOLEAN DEFAULT FALSE,            -- Whether the chore has been completed (default is false)
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Timestamp of when the schedule was created
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Timestamp of the last update
+    FOREIGN KEY (`chore_id`) REFERENCES `chores` (`id`) 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 INSERT INTO grocery_items (name, quantity, unit, status, category) VALUES
 ('Milk', 2, 'gallons', 'IN_STOCK', 'Dairy'),
 ('Bread', 1, 'loaf', 'LOW', 'Bakery'),
