@@ -1,32 +1,5 @@
-.title-box {
-    margin-bottom: 20px; 
-    text-align: center; 
-}
-
-.chores-wrapper {
-    display: flex;
-    align-items: center; 
-    justify-content: center;
-    height: 80vh;
-    background-color: #f5f5f5;
-    gap: 20px;
-}
-
-.chores-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    margin: 0; 
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    flex: 1; 
-    max-width: 300px; 
-}
-
 .default-button {
-    background-color: #007bff; 
+    background-color: #007bff; /* Default blue */
     color: white;
     border: none;
     padding: 10px 20px;
@@ -35,7 +8,7 @@
 }
 
 .clicked-button {
-    background-color: #28a745; 
+    background-color: #28a745; /* Green on click */
     color: white;
     border: none;
     padding: 10px 20px;
@@ -43,12 +16,53 @@
     cursor: pointer;
 }
 
-.checkbox-group {
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: column; 
-  }
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
 
-.checkbox-label {
-    display: flex;
+.toast {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    animation: fadeOut 3s forwards;
+}
+
+.toast.success {
+    background-color: #4caf50;
+}
+
+.toast.error {
+    background-color: #f44336;
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 0.9;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
+
+.delete-icon {
+    background: none;
+    border: none;
+    color: red;
+    font-size: 1.5rem;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.delete-icon:hover {
+    color: darkred;
 }
