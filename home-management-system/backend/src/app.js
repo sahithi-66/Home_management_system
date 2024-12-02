@@ -5,6 +5,7 @@ import noticeRoutes from './routes/notice.routes.js';
 import choreRoutes from './routes/chore.routes.js';
 import groceryRoutes from './routes/grocery.routes.js';
 import authRoutes from './routes/auth.routes.js';
+import userRoutes from './routes/user.routes.js';
 
 const app = express();
 app.use(cors());
@@ -20,6 +21,7 @@ app.use('/api/notices', noticeRoutes);
 app.use('/api/chores', choreRoutes);
 app.use('/api/groceries', groceryRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
