@@ -1,6 +1,78 @@
 import Chore  from '../models/Chore.js'; 
 
 // ChoreService Implementation
+class DailySchedule {
+    static generate(newChoreId, choreName, assignees, today) {
+        const schedules = [];
+        const assigneeCount = assignees.length;
+        for (let i = 0; i < 730; i++) { // 2 years
+            const scheduledDate = new Date(today);
+            scheduledDate.setDate(today.getDate() + i);
+            schedules.push({
+                newChoreId,
+                choreName,
+                assignedTo: assignees[i % assigneeCount],
+                scheduledDate,
+                completed: false,
+            });
+        }
+        return schedules;
+    }
+}
+
+class WeeklySchedule {
+    static generate(newChoreId, choreName, assignees, today) {
+        const schedules = [];
+        const assigneeCount = assignees.length;
+        for (let i = 0; i < 104; i++) { // 2 years
+            const scheduledDate = new Date(today);
+            scheduledDate.setDate(today.getDate() + i * 7);
+            schedules.push({
+                newChoreId,
+                choreName,
+                assignedTo: assignees[i % assigneeCount],
+                scheduledDate,
+                completed: false,
+            });
+        }
+        return schedules;
+    }
+}
+
+class MonthlySchedule {
+    static generate(newChoreId, choreName, assignees, today) {
+        const schedules = [];
+        const assigneeCount = assignees.length;
+        for (let i = 0; i < 24; i++) { // 2 years
+            const scheduledDate = new Date(today);
+            scheduledDate.setMonth(today.getMonth() + i);
+            schedules.push({
+                newChoreId,
+                choreName,
+                assignedTo: assignees[i % assigneeCount],
+                scheduledDate,
+                completed: false,
+            });
+        }
+        return schedules;
+    }
+}
+
+class ScheduleFactory {
+    static getScheduleGenerator(frequency) {
+        switch (frequency) {
+            case 'Daily':
+                return DailySchedule;
+            case 'Weekly':
+                return WeeklySchedule;
+            case 'Monthly':
+                return MonthlySchedule;
+            default:
+                throw new Error(`Invalid frequency: ${frequency}`);
+        }
+    }
+}
+
 class ChoreService {
     /**
      * Add a new chore and generate its schedule
@@ -46,30 +118,8 @@ class ChoreService {
      */
     static  generateSchedule(newChoreId, choreName, assignees, frequency) {
         const today = new Date();
-        const schedules = [];
-        const assigneeCount = assignees.length;
-       // console.log(frequency);
-       if (frequency === "Daily") {
-        for (let i = 0; i < 730; i++) { // 730 days = 2 years
-            const scheduledDate = new Date(today);
-            scheduledDate.setDate(today.getDate() + i); // Increment day by i
-            schedules.push(this.createScheduleEntry(newChoreId, choreName, assignees[i % assigneeCount], scheduledDate));
-        }
-    } else if (frequency === "Weekly") {
-        for (let i = 0; i < 104; i++) { // 104 weeks = 2 years
-            const scheduledDate = new Date(today);
-            scheduledDate.setDate(today.getDate() + i * 7); // Increment week by 7 days
-            schedules.push(this.createScheduleEntry(newChoreId, choreName, assignees[i % assigneeCount], scheduledDate));
-        }
-    } else if (frequency === "Monthly") {
-        for (let i = 0; i < 24; i++) { // 24 months = 2 years
-            const scheduledDate = new Date(today);
-            scheduledDate.setMonth(today.getMonth() + i); // Increment month by i
-            schedules.push(this.createScheduleEntry(newChoreId, choreName, assignees[i % assigneeCount], scheduledDate));
-        }
-    }
-
-        return Promise.all(schedules);
+        const ScheduleGenerator = ScheduleFactory.getScheduleGenerator(frequency);
+        return Promise.all(ScheduleGenerator.generate(newChoreId, choreName, assignees, today));
     }
 
     /**
