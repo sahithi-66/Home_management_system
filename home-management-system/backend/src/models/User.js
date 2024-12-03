@@ -18,6 +18,16 @@ class User {
         const [rows] = await db.execute('SELECT id, username as name FROM users');
         return rows;
     }
+
+    static async findAllUsers() {
+        try {
+            const [rows] = await db.execute('SELECT * FROM users');
+            return rows; // Return the rows fetched from the database
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            throw new Error('Database query failed'); // Rethrow or handle the error appropriately
+        }
+      }
 }
 
 export default User;
