@@ -13,6 +13,15 @@ CREATE TABLE IF NOT EXISTS users (
     INDEX idx_username (username)
 );
 
+--  To store the Cleared Splits
+CREATE TABLE IF NOT EXISTS cleared_splits (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    debtor VARCHAR(255) NOT NULL,
+    creditor VARCHAR(255) NOT NULL, 
+    amount DECIMAL(10, 2) NOT NULL, 
+    cleared_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Add sample users
 INSERT INTO users (username, password) VALUES
 ('user1', 'password123'),
