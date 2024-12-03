@@ -1,4 +1,5 @@
 import ChoreService from '../services/ChoreService.js';
+import Chore  from '../models/Chore.js';
 
 class ChoreController {
     async createChore(req, res, next) {
