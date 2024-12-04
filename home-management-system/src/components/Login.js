@@ -6,7 +6,8 @@ import {
     Button, 
     Typography, 
     message, 
-    Space 
+    Space, 
+    Modal 
 } from 'antd';
 import { 
     UserOutlined, 
@@ -20,6 +21,8 @@ const { Title } = Typography;
 const Login = ({ onLoginSuccess, setUsername, setRoomId, onSignup }) => {
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
+    const [isCreateRoomVisible, setIsCreateRoomVisible] = useState(false);
+    const [isJoinRoomVisible, setIsJoinRoomVisible] = useState(false);
 
     const handleLogin = async (values) => {
         setLoading(true);
@@ -33,7 +36,6 @@ const Login = ({ onLoginSuccess, setUsername, setRoomId, onSignup }) => {
                     roomid: values.roomid,
                     username: values.username, 
                     password: values.password,
-                    
                 }),
             });
 
@@ -63,7 +65,7 @@ const Login = ({ onLoginSuccess, setUsername, setRoomId, onSignup }) => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ 
-                    roomid : values.roomid,
+                    roomid: values.roomid,
                     username: values.username, 
                     password: values.password 
                 }),
@@ -72,6 +74,7 @@ const Login = ({ onLoginSuccess, setUsername, setRoomId, onSignup }) => {
             if (response.ok) {
                 const data = await response.json();
                 message.success('Room creation successful!');
+                setIsCreateRoomVisible(false); // Close the modal on success
             }
         } catch (error) {
             console.error('Room creation failed:', error);
@@ -79,7 +82,7 @@ const Login = ({ onLoginSuccess, setUsername, setRoomId, onSignup }) => {
         } 
     };
 
-    const handleCreateUser = async (values) => {
+    const handleJoinRoom = async (values) => {
         try {
             const response = await fetch('http://localhost:3000/api/auth/userregistration', {
                 method: 'POST',
@@ -87,17 +90,17 @@ const Login = ({ onLoginSuccess, setUsername, setRoomId, onSignup }) => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ 
-                    roomid : values.roomid,
+                    roomid: values.roomid,
                     username: values.username, 
                     password: values.password,
                     roomcode: values.roomcode
-
                 }),
             });
 
             if (response.ok) {
                 const data = await response.json();
                 message.success('User creation successful!');
+                setIsJoinRoomVisible(false); // Close the modal on success
             }
         } catch (error) {
             console.error('User creation failed:', error);
@@ -121,7 +124,6 @@ const Login = ({ onLoginSuccess, setUsername, setRoomId, onSignup }) => {
                         layout="vertical"
                         size="large"
                     >
-
                         <Form.Item
                             name="roomid"
                             rules={[
@@ -181,26 +183,114 @@ const Login = ({ onLoginSuccess, setUsername, setRoomId, onSignup }) => {
                     </Form>
 
                     <div style={{ textAlign: 'center' }}>
-                        
                         <Space direction="horizontal" size="large">
                             <Button 
                                 type="default" 
-                                onClick={() => onSignup('room')} 
+                                onClick={() => setIsCreateRoomVisible(true)} 
                                 block
                             >
                                 Create Room
                             </Button>
                             <Button 
                                 type="default" 
-                                onClick={() => onSignup('user')} 
+                                onClick={() => setIsJoinRoomVisible(true)} 
                                 block
                             >
-                                Create User
+                                Join Room
                             </Button>
                         </Space>
                     </div>
                 </Space>
             </Card>
+
+            {/* Create Room Modal */}
+            <Modal
+                title="Create Room"
+                visible={isCreateRoomVisible}
+                onCancel={() => setIsCreateRoomVisible(false)}
+                footer={null}
+            >
+                <Form
+                    name="createRoom"
+                    onFinish={handleCreateRoom}
+                    layout="vertical"
+                >
+                    <Form.Item
+                        name="roomid"
+                        label="Room ID"
+                        rules={[{ required: true, message: 'Please input a room ID!' }]}
+                    >
+                        <Input />
+                    </Form.Item>
+                    <Form.Item
+                        name="username"
+                        label="Username"
+                        rules={[{ required: true, message: 'Please input your username!' }]}
+                    >
+                        <Input />
+                    </Form.Item>
+                    <Form.Item
+                        name="password"
+                        label="Password"
+                        rules={[{ required: true, message: 'Please input a password!' }]}
+                    >
+                        <Input.Password />
+                    </Form.Item>
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit" block>
+                            Create Room
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </Modal>
+
+            {/* Join Room Modal */}
+            <Modal
+                title="Join Room"
+                visible={isJoinRoomVisible}
+                onCancel={() => setIsJoinRoomVisible(false)}
+                footer={null}
+            >
+                <Form
+                    name="joinRoom"
+                    onFinish={handleJoinRoom}
+                    layout="vertical"
+                >
+                    <Form.Item
+                        name="roomid"
+                        label="Room ID"
+                        rules={[{ required: true, message: 'Please input a room ID!' }]}
+                    >
+                        <Input />
+                    </Form.Item>
+                    <Form.Item
+                        name="username"
+                        label="Username"
+                        rules={[{ required: true, message: 'Please input your username!' }]}
+                    >
+                        <Input />
+                    </Form.Item>
+                    <Form.Item
+                        name="password"
+                        label="Password"
+                        rules={[{ required: true, message: 'Please input a password!' }]}
+                    >
+                        <Input.Password />
+                    </Form.Item>
+                    <Form.Item
+                        name="roomcode"
+                        label="Room Code"
+                        rules={[{ required: true, message: 'Please input the room code!' }]}
+                    >
+                        <Input />
+                    </Form.Item>
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit" block>
+                            Join Room
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </Modal>
         </div>
     );
 };
