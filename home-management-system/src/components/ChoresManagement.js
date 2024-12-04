@@ -47,10 +47,7 @@ const ChoresManagement = ( {roomid} ) => {
 
     const fetchRoommates = async () => {
         try {
-            console.log(roomid);
-            console.log(JSON.stringify({
-                roomid: roomid,
-            }));
+           
             const response = await fetch(`${API_URL}/auth/${roomid}`, {
                 method: 'GET',
                 headers: {
@@ -59,7 +56,7 @@ const ChoresManagement = ( {roomid} ) => {
                
 
             });
-            console.log(response);
+            // console.log(response);
             if (!response.ok) throw new Error('Failed to fetch users');
             const data = await response.json();
             console.log('Fetched roommates:', data);
@@ -266,27 +263,27 @@ const ChoresManagement = ( {roomid} ) => {
                     </Form.Item>
 
                     <Form.Item
-    name="assignees"
-    label="Assignees"
-    rules={[{ required: true, message: 'Please select assignees' }]}
->
-    <Select
-        mode="multiple"
-        placeholder="Select assignees"
-        style={{ width: '100%' }}
-        optionLabelProp="label"
-    >
-        {roommates.map(roommate => (
-            <Option 
-                key={roommate.id} 
-                value={roommate.id} 
-                label={roommate.name}
-            >
-                {roommate.name}
-            </Option>
-        ))}
-    </Select>
-</Form.Item>
+                        name="assignees"
+                        label="Assignees"
+                        rules={[{ required: true, message: 'Please select assignees' }]}
+                    >
+                        <Select
+                            mode="multiple"
+                            placeholder="Select assignees"
+                            style={{ width: '100%' }}
+                            optionLabelProp="label"
+                        >
+                            {roommates.map(roommate => (
+                                <Option 
+                                    key={roommate.id} 
+                                    value={roommate.id} 
+                                    label={roommate.name}
+                                >
+                                    {roommate.name}
+                                </Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
 
                     <Form.Item
                         name="frequency"

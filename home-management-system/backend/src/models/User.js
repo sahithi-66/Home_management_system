@@ -14,6 +14,11 @@ class User {
         return rows[0];
     }
 
+    static async updateRoomCode(roomid, roomcode) {
+        const [rows] = await db.execute('UPDATE users SET  roomcode = ?  WHERE roomid = ?', [roomcode, roomid]);
+        return rows[0];
+    }
+
     static async findByUsername(username, roomid) {
         const [rows] = await db.execute('SELECT * FROM users WHERE username = ? and roomid = ?', [username, roomid]);
         return rows[0];

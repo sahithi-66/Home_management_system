@@ -6,13 +6,10 @@ const router = express.Router();
 
 router.post('/login', AuthController.login);
 
-router.get('/fetchcode', async (req, res, next) => {
+router.get('/fetchcode/:roomid', async (req, res, next) => {
     try {
-        //console.log("room registration started");
-        const { roomid } = req.body;
-        
+        const { roomid } = req.params;
         const ogcode = await User.fetchcode(roomid);
-        
         res.status(200).json(ogcode.roomcode);
     } catch (error) {
         next(error);
@@ -62,6 +59,8 @@ router.delete('/delete/user/', async (req, res, next) => {
     try {
         const { roomid, username } = req.body;
         const userId = await User.deleteUser(username, roomid);
+        const roomcode = await Math.floor(1000 + Math.random() * 9000);
+        await User.updateRoomCode(roomid, roomcode);
         res.status(201).json({ id: userId, message: 'User deleted successfully' });
     } catch (error) {
         next(error);

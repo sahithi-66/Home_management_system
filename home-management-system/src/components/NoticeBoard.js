@@ -177,8 +177,9 @@ const NoticeBoard = () => {
                                     title={
                                         <Space>
                                             {announcement.title}
-                                            {announcement.is_parcel && 
+                                            {announcement.is_parcel ? (
                                                 <Tag color="blue">Parcel</Tag>
+                                            ) : null
                                             }
                                         </Space>
                                     }
