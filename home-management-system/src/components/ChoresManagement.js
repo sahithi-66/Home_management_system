@@ -47,17 +47,19 @@ const ChoresManagement = ( {roomid} ) => {
 
     const fetchRoommates = async () => {
         try {
-
-            const response = await fetch(`${API_URL}/auth`, {
+            console.log(roomid);
+            console.log(JSON.stringify({
+                roomid: roomid,
+            }));
+            const response = await fetch(`${API_URL}/auth/${roomid}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    roomid: roomid,
-                }),
+               
 
             });
+            console.log(response);
             if (!response.ok) throw new Error('Failed to fetch users');
             const data = await response.json();
             console.log('Fetched roommates:', data);

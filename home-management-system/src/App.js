@@ -94,7 +94,7 @@ const App = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'ExpenditureSplit':
-        return <ExpenditureSplit />;
+        return <ExpenditureSplit roomid={roomid}/>;
       case 'NoticeBoard':
         return <NoticeBoard />;
       case 'ChoresManagement':

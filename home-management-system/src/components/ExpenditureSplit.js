@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './ExpenditureSplit.css';
 import { Helmet } from 'react-helmet';
 
-const ExpenditureSplit = ({ splits: initialSplits}) => {
+const ExpenditureSplit = ({ splits: initialSplits, roomid}) => {
     const [splits, setSplits] = useState(initialSplits);
     const [paymentAmounts, setPaymentAmounts] = useState({});
     const [participants, setParticipants] = useState([]);
@@ -65,7 +65,7 @@ const ExpenditureSplit = ({ splits: initialSplits}) => {
     };
     const fetchExpenses = async () => {
         try {
-            const response = await fetch('http://localhost:3004/api/expenses');
+            const response = await fetch('http://localhost:3000/api/expenses');
             const data = await response.json();
             setExpenses(data);
         } catch (error) {
@@ -77,7 +77,7 @@ const ExpenditureSplit = ({ splits: initialSplits}) => {
     };
     const fetchClearedSplits = async () =>{
         try {
-            const response = await fetch('http://localhost:3004/api/getClearedSplits');
+            const response = await fetch('http://localhost:3000/api/getClearedSplits');
             const data = await response.json();
             setClearedSplits(data.data);
             console.log(data.data);
@@ -90,7 +90,7 @@ const ExpenditureSplit = ({ splits: initialSplits}) => {
     };
     const fetchSplits = async() =>{
         try{
-            const response = await fetch('http://localhost:3004/api/getSplits');
+            const response = await fetch('http://localhost:3000/api/getSplits');
             const data = await response.json();
             console.log("Data: ",data.data);
             const result = calculateSplits(data.data);
@@ -108,7 +108,7 @@ const ExpenditureSplit = ({ splits: initialSplits}) => {
     useEffect(() => {
         const fetchParticipants = async () => {
             try {
-                const response = await fetch('http://localhost:3004/api/users');
+                const response = await fetch(`http://localhost:3000/api/auth/${roomid}`);
                 const data = await response.json();
                 console.log('Fetched Participants:', data.participants);
                 console.log("data: ",data);
@@ -148,7 +148,7 @@ const ExpenditureSplit = ({ splits: initialSplits}) => {
     //     console.log("----------------------------------------------");
     //     if (amountToClear > 0) {
     //         // Call backend API to update the split
-    //         fetch(`http://localhost:3004/api/clearSplit/${splitId}`, {
+    //         fetch(`http://localhost:3000/api/clearSplit/${splitId}`, {
     //             method: "POST",
     //             headers: { "Content-Type": "application/json" },
     //             body: JSON.stringify({ amount: amountToClear,splits: splits }),
@@ -188,7 +188,7 @@ const ExpenditureSplit = ({ splits: initialSplits}) => {
     
         if (amountToClear > 0) {
             try {
-                const response = await fetch(`http://localhost:3004/api/clearSplit/${splitId}`, {
+                const response = await fetch(`http://localhost:3000/api/clearSplit/${splitId}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ amount: amountToClear, splits }),
@@ -259,7 +259,7 @@ const ExpenditureSplit = ({ splits: initialSplits}) => {
     //     };
 
     //     try {
-    //         const response = await fetch('http://localhost:3004/api/expenses', {
+    //         const response = await fetch('http://localhost:3000/api/expenses', {
     //             method: 'POST',
     //             headers: { 'Content-Type': 'application/json' },
     //             body: JSON.stringify(expenseData),
@@ -329,7 +329,7 @@ const ExpenditureSplit = ({ splits: initialSplits}) => {
 
         try {
             // Submit to the API
-            const response = await fetch('http://localhost:3004/api/expenses', {
+            const response = await fetch('http://localhost:3000/api/expenses', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(expenseData),
@@ -364,14 +364,14 @@ const ExpenditureSplit = ({ splits: initialSplits}) => {
     
     const handleDeleteExpense = async (expenseId) => {
         try {
-            // await fetch(`http://localhost:3004/api/expenses/${expenseId}`, { method: 'DELETE' });
+            // await fetch(`http://localhost:3000/api/expenses/${expenseId}`, { method: 'DELETE' });
             // setExpenses(expenses.filter(exp => exp.id !== expenseId));
             // await fetchSplits();
             // const updatedSplits = calculateSplits(expenses.filter(exp => exp.id !== expenseId));
             // console.log("Updated Splits",updatedSplits);
             // setSplits(updatedSplits);
             // Delete the expense from the server
-            await fetch(`http://localhost:3004/api/expenses/${expenseId}`, { method: 'DELETE' });
+            await fetch(`http://localhost:3000/api/expenses/${expenseId}`, { method: 'DELETE' });
 
             const updatedExpenses = expenses.filter(exp => exp.id !== expenseId);
             setExpenses(updatedExpenses); 
@@ -391,14 +391,14 @@ const ExpenditureSplit = ({ splits: initialSplits}) => {
     const handleUpdateExpense = async (expenseId, updatedData) => {
         try {
             // Send PUT request to update the expense
-            await fetch(`http://localhost:3004/api/expenses/${expenseId}`, {
+            await fetch(`http://localhost:3000/api/expenses/${expenseId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(updatedData),
             });
     
             // After updating, fetch the updated list of all expenses
-            const response = await fetch('http://localhost:3004/api/expenses');
+            const response = await fetch('http://localhost:3000/api/expenses');
             const updatedExpenses = await response.json();
     
             // Update the state with the new list of expenses
