@@ -4,8 +4,9 @@ import Chore  from '../models/Chore.js';
 class ChoreController {
     async addChore(req, res, next) {
     console.log(req.body);
-    const { choreName, assignees, frequency } = req.body;
-    console.log(Chore.fetchChoreCount(choreName));
+    const { choreName, assignees, frequency, start_date } = req.body;
+    //console.log(Chore.fetchChoreCount(choreName));
+    console.log(choreName);
     const choreCount = await Chore.fetchChoreCount(choreName);
     console.log(choreCount[0].count);
     if(choreCount[0].count>0){
@@ -16,7 +17,7 @@ class ChoreController {
     }
     try {
     // Call the addChore function from the model
-    const newChoreId = await ChoreService.addNewChoreWithSchedule(choreName, assignees, frequency);
+    const newChoreId = await ChoreService.addNewChoreWithSchedule(choreName, assignees, frequency, start_date);
     
     res.status(201).json({
         id: newChoreId,

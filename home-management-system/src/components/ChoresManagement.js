@@ -45,6 +45,7 @@ const ChoresManagement = () => {
     const fetchRoommates = async () => {
         try {
             const response = await fetch(`${API_URL}/auth`);
+            console.log(response);
             if (!response.ok) throw new Error('Failed to fetch users');
             const data = await response.json();
             setRoommates(data);
@@ -56,7 +57,7 @@ const ChoresManagement = () => {
     const fetchChores = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${API_URL}/chores`);
+            const response = await fetch(`${API_URL}/chores/fetchAll`);
             if (!response.ok) throw new Error('Failed to fetch chores');
             const data = await response.json();
             setChores(data);
@@ -69,21 +70,18 @@ const ChoresManagement = () => {
 
     const onFinish = async (values) => {
         try {
-            const response = await fetch(`${API_URL}/chores/rotation`, {
+            const response = await fetch(`${API_URL}/chores/addChore`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    chore: {
-                        title: values.title,
-                        description: values.description,
-                        due_date: values.due_date.format('YYYY-MM-DD')
-                    },
-                    schedule: {
-                        scheduleType: values.frequency,
-                        roommates: values.assignees
-                    }
+                    
+                        choreName: values.title,
+                        assignees: values.assignees,
+                        frequency: values.frequency,
+                        start_date: values.due_date.format('YYYY-MM-DD'),
+                    
                 }),
             });
 
@@ -99,7 +97,7 @@ const ChoresManagement = () => {
 
     const handleDelete = async (id) => {
         try {
-            const response = await fetch(`${API_URL}/chores/${id}`, {
+            const response = await fetch(`${API_URL}/chores/deleteChore/${id}`, {
                 method: 'DELETE'
             });
             
@@ -115,7 +113,7 @@ const ChoresManagement = () => {
     const showSchedule = async (chore) => {
         setSelectedChore(chore);
         try {
-            const response = await fetch(`${API_URL}/chores/${chore.id}/schedule`);
+            const response = await fetch(`${API_URL}/chores/schedule/${chore.id}`);
             if (!response.ok) throw new Error('Failed to fetch schedule');
             const data = await response.json();
             setSchedule(data);
@@ -143,40 +141,32 @@ const ChoresManagement = () => {
     const columns = [
         {
             title: 'Title',
-            dataIndex: 'title',
-            key: 'title',
+            dataIndex: 'choreName',
+            key: 'choreName',
         },
-        {
-            title: 'Description',
-            dataIndex: 'description',
-            key: 'description',
-            ellipsis: true,
-        },
+        
         {
             title: 'Assigned To',
-            dataIndex: 'assigned_to_name',
-            key: 'assigned_to_name',
-            render: (text) => <Tag color="blue">{text}</Tag>
+            dataIndex: 'assignedTo',
+            key: 'assignedTo',
+            render: (_, record) => {
+                // Convert IDs to names
+                const assigneeNames = JSON.parse(record.roommates || "[]")
+                    .map((id) => {
+                        const roommate = roommates.find((r) => r.id === id);
+                        return roommate ? roommate.name : `Unknown (ID: ${id})`;
+                    })
+                    .join(", ");
+                return assigneeNames ? <Tag color="blue">{assigneeNames}</Tag> : <Tag color="red">Unassigned</Tag>;
+            },
         },
         {
-            title: 'Due Date',
-            dataIndex: 'due_date',
-            key: 'due_date',
-            render: (date) => dayjs(date).format('YYYY-MM-DD')
+            title: 'Frequency',
+            dataIndex: 'scheduleType',
+            key: 'scheduleType',
+            
         },
-        {
-            title: 'Status',
-            dataIndex: 'status',
-            key: 'status',
-            render: (status) => {
-                const colors = {
-                    PENDING: 'orange',
-                    IN_PROGRESS: 'blue',
-                    COMPLETED: 'green'
-                };
-                return <Tag color={colors[status]}>{status}</Tag>;
-            }
-        },
+        
         {
             title: 'Actions',
             key: 'actions',
@@ -209,14 +199,19 @@ const ChoresManagement = () => {
     const scheduleColumns = [
         {
             title: 'Date',
-            dataIndex: 'date',
-            key: 'date',
+            dataIndex: 'scheduled_date',
+            key: 'scheduled_date',
+            render: (date) => dayjs(date).format('YYYY-MM-DD') // Format the date
         },
         {
             title: 'Assigned To',
-            dataIndex: 'assignee',
-            key: 'assignee',
-            render: (assignee) => <Tag color="blue">{assignee}</Tag>
+            dataIndex: 'assigned_to',
+            key: 'assigned_to',
+            render: (assigneeId) => {
+                // Find the name corresponding to the assignee ID
+                const roommate = roommates.find((r) => r.id.toString() === assigneeId);
+                return roommate ? <Tag color="blue">{roommate.name}</Tag> : <Tag color="red">Unknown</Tag>;
+            }
         }
     ];
 
@@ -235,13 +230,6 @@ const ChoresManagement = () => {
                         rules={[{ required: true, message: 'Please enter title' }]}
                     >
                         <Input placeholder="Enter chore title" />
-                    </Form.Item>
-
-                    <Form.Item
-                        name="description"
-                        label="Description"
-                    >
-                        <TextArea rows={4} placeholder="Enter chore description" />
                     </Form.Item>
 
                     <Form.Item
@@ -300,7 +288,7 @@ const ChoresManagement = () => {
             </Card>
 
             <Modal
-                title={`Schedule for ${selectedChore?.title}`}
+                title={`Schedule for ${selectedChore?.choreName}`}
                 open={scheduleModalVisible}
                 onCancel={() => setScheduleModalVisible(false)}
                 footer={null}

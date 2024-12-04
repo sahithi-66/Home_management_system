@@ -2,12 +2,12 @@ import Chore  from '../models/Chore.js';
 
 // ChoreService Implementation
 class DailySchedule {
-    static generate(newChoreId, choreName, assignees, today) {
+    static generate(newChoreId, choreName, assignees, start_date) {
         const schedules = [];
         const assigneeCount = assignees.length;
         for (let i = 0; i < 730; i++) { // 2 years
-            const scheduledDate = new Date(today);
-            scheduledDate.setDate(today.getDate() + i);
+            //const scheduledDate = new Date(start_date);
+            scheduledDate.setUTCDate(start_date.getUTCDate() + i);
             schedules.push({
                 newChoreId,
                 choreName,
@@ -21,12 +21,21 @@ class DailySchedule {
 }
 
 class WeeklySchedule {
-    static generate(newChoreId, choreName, assignees, today) {
+    static generate(newChoreId, choreName, assignees, start_date) {
         const schedules = [];
         const assigneeCount = assignees.length;
+        console.log(start_date);
         for (let i = 0; i < 104; i++) { // 2 years
-            const scheduledDate = new Date(today);
-            scheduledDate.setDate(today.getDate() + i * 7);
+            
+            const scheduledDate = new Date(start_date);
+            //scheduledDate.setHours(0, 0, 0, 0); // Reset to midnight local time
+            //console.log(`Original: ${scheduledDate}`);
+
+            // Add days (treating the date as local)
+            //console.log(`with get date: ${scheduledDate.getDate()}`);
+            scheduledDate.setUTCDate(scheduledDate.getUTCDate() + i * 7); // Add weeks
+            console.log(`${i} weekly: ${scheduledDate.toISOString()}`);
+
             schedules.push({
                 newChoreId,
                 choreName,
@@ -34,18 +43,22 @@ class WeeklySchedule {
                 scheduledDate,
                 completed: false,
             });
+            if(i==1){
+                console.log(schedules);
+            }
+            
         }
         return schedules;
     }
 }
 
 class MonthlySchedule {
-    static generate(newChoreId, choreName, assignees, today) {
+    static generate(newChoreId, choreName, assignees, start_date) {
         const schedules = [];
         const assigneeCount = assignees.length;
         for (let i = 0; i < 24; i++) { // 2 years
-            const scheduledDate = new Date(today);
-            scheduledDate.setMonth(today.getMonth() + i);
+            const scheduledDate = new Date(start_date);
+            scheduledDate.setMonth(start_date.getMonth() + i);
             schedules.push({
                 newChoreId,
                 choreName,
@@ -61,11 +74,11 @@ class MonthlySchedule {
 class ScheduleFactory {
     static getScheduleGenerator(frequency) {
         switch (frequency) {
-            case 'Daily':
+            case 'DAILY':
                 return DailySchedule;
-            case 'Weekly':
+            case 'WEEKLY':
                 return WeeklySchedule;
-            case 'Monthly':
+            case 'MONTHLY':
                 return MonthlySchedule;
             default:
                 throw new Error(`Invalid frequency: ${frequency}`);
@@ -81,30 +94,37 @@ class ChoreService {
      * @param {"daily"|"monthly"} frequency - Frequency of the chore
      * @returns {Promise<number>} ID of the newly created chore
      */
-    static async addNewChoreWithSchedule(choreName, assignees, frequency) {
+    static async addNewChoreWithSchedule(choreName, assignees, frequency, date) {
         const currentIndex = 0; // Default value
-        const nextOccurrence = new Date(); // Placeholder for scheduling logic
+        const start_date = new Date(date); 
+        let newChoreId;
 
         try {
             // Step 1: Add the chore to the database
-            const newChoreId = await Chore.addChore({
+             newChoreId = await Chore.addChore({
                 choreName,
                 assignees,
                 frequency,
                 currentIndex,
-                nextOccurrence,
+                start_date,
+                
             });
 
             console.log(`Chore added successfully with ID: ${newChoreId}`);
 
             // Step 2: Generate the schedule for the chore
-            const schedules = await this.generateSchedule(newChoreId, choreName, assignees, frequency);
+            const schedules = await this.generateSchedule(newChoreId, choreName, assignees, frequency, start_date);
             await this.saveSchedules( schedules);
 
             console.log(`Schedules created successfully for chore ID: ${newChoreId}`);
             return newChoreId;
         } catch (error) {
             console.error("Error adding chore with schedule:", error);
+            //TODO: DELETE CHORE
+            if(newChoreId>0){
+                const result = await Chore.deleteChoreById(newChoreId);
+            }
+            //TODO: DELETE SCHEDULE
             throw error;
         }
     }
@@ -116,10 +136,10 @@ class ChoreService {
      * @param {"daily"|"monthly"} frequency - Frequency of the chore
      * @returns {Object[]} Array of schedule objects
      */
-    static  generateSchedule(newChoreId, choreName, assignees, frequency) {
-        const today = new Date();
+    static  generateSchedule(newChoreId, choreName, assignees, frequency, start_date) {
+        const startDate = new Date();
         const ScheduleGenerator = ScheduleFactory.getScheduleGenerator(frequency);
-        return Promise.all(ScheduleGenerator.generate(newChoreId, choreName, assignees, today));
+        return Promise.all(ScheduleGenerator.generate(newChoreId, choreName, assignees, start_date));
     }
 
     /**
@@ -145,16 +165,19 @@ class ChoreService {
      * @param {Object[]} schedules - Array of schedule objects
      */
     static async saveSchedules(schedules) {
-        console.log('here');
-        console.log(schedules);
+        //console.log('here');
+        //console.log(schedules);
         if (!Array.isArray(schedules)) {
             schedules = [];  // Default to empty array
             console.log('empty array');
         }
+        let i=0;
         schedules.forEach(schedule => {
+            if(i==0) console.log(schedule);
+            i=1;
             // Handle each schedule (insert into DB, etc.)
             Chore.addSchedule(schedule);
-            console.log('Saving schedule:', schedule);
+            //console.log('Saving schedule:', schedule);
         });
     }
 
