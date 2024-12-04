@@ -1,10 +1,48 @@
 import React, { useState, useEffect } from 'react';
+import {
+    Layout,
+    Card,
+    Form,
+    Input,
+    InputNumber,
+    Select,
+    Button,
+    Table,
+    Tag,
+    Space,
+    Divider,
+    Typography,
+    Modal,
+    message,
+    Row,
+    Col,
+    Tabs,
+    Alert,
+    Empty,
+    Spin
+} from 'antd';
+import {
+    PlusOutlined,
+    DeleteOutlined,
+    EditOutlined,
+    DollarOutlined,
+    UserOutlined,
+    ScheduleOutlined,
+    CheckCircleOutlined
+} from '@ant-design/icons';
 import './ExpenditureSplit.css';
-import { Helmet } from 'react-helmet';
 
-const ExpenditureSplit = ({ splits: initialSplits, roomid}) => {
+const { Title } = Typography;
+const { Option } = Select;
+const { TabPane } = Tabs;
+
+const ExpenditureSplit = ({ splits: initialSplits = [], roomid }) => {
+    const [form] = Form.useForm();
     const [splits, setSplits] = useState(initialSplits);
+    const [editMode, setEditMode] = useState(null);
+    const [editedExpense, setEditedExpense] = useState({});
     const [paymentAmounts, setPaymentAmounts] = useState({});
+    const [isEditing, setIsEditing] = useState(false);
     const [participants, setParticipants] = useState([]);
     const [expenseName, setExpenseName] = useState('');
     const [clearedSplits, setClearedSplits] = useState('');
@@ -15,113 +53,101 @@ const ExpenditureSplit = ({ splits: initialSplits, roomid}) => {
     const [expenses, setExpenses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [showPendingSplits, setShowPendingSplits] = useState(false);
-    const [showClearedSplits, setShowClearedSplits] = useState(false);
-    const [showExpenses, setShowExpenses] = useState(false);
-    const [categories, setCategories] = useState(['General', 'Food', 'Utility', 'Travel', 'Miscellaneous']);  // Add categories here
-    useEffect(() => {
-        console.log('Initial Splits:', splits);
-    }, [splits]);
-    useEffect(() => {
-        console.log('Updated participants:', participants);
-    }, [participants]);
+    const [errors, setErrors] = useState({});
+    const [showPendingSplits, setShowPendingSplits] = useState(true);
+    const [showClearedSplits, setShowClearedSplits] = useState(true);
+    const [showExpenses, setShowExpenses] = useState(true);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [modalMessage, setModalMessage] = useState("");
+    const [categories] = useState(['General', 'Food', 'Utility', 'Travel', 'Miscellaneous']);
+
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        const day = date.getDate();
+        const month = date.toLocaleString('default', { month: 'long' });
+        const year = date.getFullYear();
+        const ordinal = (n) => {
+            const suffixes = ["th", "st", "nd", "rd"];
+            const value = n % 100;
+            return suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0];
+        };
+        return `${day}${ordinal(day)} ${month} ${year}`;
+    };
+
     const calculateSplits = (users) => {
-        console.log("Inside Calculate Splits: ",users);
         const creditors = users.filter(user => user.net_amount > 0).map(user => ({ ...user }));
         const debtors = users.filter(user => user.net_amount < 0).map(user => ({ ...user }));
-
         const splits = [];
         let splitId = 1;
 
         for (let debtor of debtors) {
             while (debtor.net_amount < 0) {
                 const creditor = creditors.find(creditor => creditor.net_amount > 0);
-                if (!creditor) {
-                    console.error('No creditor with a positive balance found.');
-                    break; // Exit the loop if no creditor is available
-                }
-                console.log("Creditors: ",creditor.user_name);
-                console.log("Debtors: ",debtor.user_name);
+                if (!creditor) break;
                 const settleAmount = Math.min(Math.abs(debtor.net_amount), creditor.net_amount);
-
-                
                 splits.push({
                     id: splitId++,
-                    debtor: debtor.user_name,
-                    creditor: creditor.user_name,
+                    debtor: debtor.username,
+                    creditor: creditor.username,
                     amount: settleAmount
                 });
-
                 debtor.net_amount += settleAmount;
                 creditor.net_amount -= settleAmount;
-
                 if (creditor.net_amount === 0) {
                     creditors.shift();
                 }
             }
         }
-        console.log("Splits Summary: ",splits);
         return splits;
     };
+
     const fetchExpenses = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/expenses');
+            const response = await fetch('http://localhost:3004/api/expenses');
             const data = await response.json();
             setExpenses(data);
         } catch (error) {
-            setError('Error fetching expenses');
-            console.error(error);
+            message.error('Error fetching expenses');
         } finally {
             setLoading(false);
         }
     };
-    const fetchClearedSplits = async () =>{
+
+    const fetchClearedSplits = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/getClearedSplits');
+            const response = await fetch('http://localhost:3004/api/getClearedSplits');
             const data = await response.json();
             setClearedSplits(data.data);
-            console.log(data.data);
         } catch (error) {
-            setError('Error fetching Cleared Splits');
-            console.error(error);
-        } finally {
-            setLoading(false);
+            message.error('Error fetching cleared splits');
         }
     };
-    const fetchSplits = async() =>{
-        try{
-            const response = await fetch('http://localhost:3000/api/getSplits');
+
+    const fetchSplits = async () => {
+        try {
+            const response = await fetch('http://localhost:3004/api/getSplits');
             const data = await response.json();
-            console.log("Data: ",data.data);
             const result = calculateSplits(data.data);
             setSplits(result);
-        }
-        catch(error){
-            setError('Error fetching Pending Splits');
-            console.error(error);
-        }
-        finally {
-            setLoading(false);
+        } catch (error) {
+            message.error('Error fetching pending splits');
         }
     };
-    
+
     useEffect(() => {
         const fetchParticipants = async () => {
             try {
                 const response = await fetch(`http://localhost:3000/api/auth/${roomid}`);
                 const data = await response.json();
-                console.log('Fetched Participants:', data.participants);
-                console.log("data: ",data);
                 setParticipants(data);
                 setParticipantShares(
                     data.reduce((acc, participant) => {
-                        acc[participant.id] = '';  
+                        acc[participant.id] = '';
                         return acc;
                     }, {})
                 );
             } catch (error) {
-                setError('Error fetching participants');
-                console.error(error);
+                message.error('Error fetching participants');
             }
         };
         
@@ -130,6 +156,7 @@ const ExpenditureSplit = ({ splits: initialSplits, roomid}) => {
         fetchExpenses();
         fetchSplits();
     }, []);
+
     const handleShareChange = (participant, value) => {
         setParticipantShares({
             ...participantShares,
@@ -137,58 +164,33 @@ const ExpenditureSplit = ({ splits: initialSplits, roomid}) => {
         });
     };
 
+    // Add this with your other function definitions
+const handleChange = (field, value) => {
+    setEditedExpense(prev => ({
+        ...prev,
+        [field]: value
+    }));
+};
+
     const handleInputChange = (splitId, amount) => {
         setPaymentAmounts({ ...paymentAmounts, [splitId]: amount });
     };
 
-    // const clearSplit = async(splitId, remainingAmount) => {
-    //     const amountToClear = paymentAmounts[splitId] || 0;
-    //     console.log("----------------------------------------------");
-    //     console.log("amount to clear: ",amountToClear);
-    //     console.log("----------------------------------------------");
-    //     if (amountToClear > 0) {
-    //         // Call backend API to update the split
-    //         fetch(`http://localhost:3000/api/clearSplit/${splitId}`, {
-    //             method: "POST",
-    //             headers: { "Content-Type": "application/json" },
-    //             body: JSON.stringify({ amount: amountToClear,splits: splits }),
-    //         })
-    //             .then((response) => response.json())
-    //             .then((data) => {
-    //                 alert(data.message);
-    //                 // Optionally refresh splits
-    //                 setSplits(data.updatedSplits);
-    //                 updateSummary(data.updatedSplits);
-    //                 setClearedSplits((prevClearedSplits) => {
-    //                     const clearedSplit = data.clearedSplit; // Assuming backend returns the cleared split
-    //                     const existingIndex = prevClearedSplits.findIndex(
-    //                         (split) => split.id === clearedSplit.id
-    //                     );
-    
-    //                     if (existingIndex !== -1) {
-    //                         // Update existing split
-    //                         const updatedClearedSplits = [...prevClearedSplits];
-    //                         updatedClearedSplits[existingIndex] = clearedSplit;
-    //                         return updatedClearedSplits;
-    //                     } else {
-    //                         // Add new cleared split
-    //                         return [...prevClearedSplits, clearedSplit];
-    //                     }
-    //                 });
-    //             })
-    //             .catch((error) => console.error("Error clearing split:", error));
-    //     } else {
-    //         alert("Enter a valid amount to clear!");
-    //     }
-        
-    //     console.log("Cleared Splits: ",clearedSplits);
-    // }
+    const showModal = (msg) => {
+        setModalMessage(msg);
+        setIsModalVisible(true);
+    };
+
+    const handleModalClose = () => {
+        setIsModalVisible(false);
+    };
+
     const clearSplit = async (splitId, remainingAmount) => {
         const amountToClear = paymentAmounts[splitId] || 0;
     
         if (amountToClear > 0) {
             try {
-                const response = await fetch(`http://localhost:3000/api/clearSplit/${splitId}`, {
+                const response = await fetch(`http://localhost:3004/api/clearSplit/${splitId}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ amount: amountToClear, splits }),
@@ -197,19 +199,13 @@ const ExpenditureSplit = ({ splits: initialSplits, roomid}) => {
                 const data = await response.json();
     
                 if (response.ok) {
-                    alert(data.message);
-    
-                    // Update `splits`
+                    showModal(data.message || "Split cleared successfully!");
                     setSplits(data.updatedSplits);
                     updateSummary(data.updatedSplits);
-                    console.log("Cleared Split DATA:",data);
-                    // Update `clearedSplits`
+                    
                     setClearedSplits((prevClearedSplits) => {
-                        console.log("prevClearedSplits: ",prevClearedSplits);
                         const clearedSplit = data.clearedSplit;
-                        console.log("clearedSplit: ",clearedSplit);
                         if (!clearedSplit || !clearedSplit.id) {
-                            console.error("Invalid clearedSplit object:", clearedSplit);
                             return prevClearedSplits;
                         }
     
@@ -226,92 +222,46 @@ const ExpenditureSplit = ({ splits: initialSplits, roomid}) => {
                         }
                     });
                 } else {
-                    console.error("Error clearing split:", data.message);
-                    alert(data.message || "Failed to clear split");
+                    message.error(data.message || "Failed to clear split");
                 }
             } catch (error) {
-                console.error("Error clearing split:", error);
-                alert("Failed to clear split");
+                message.error("Failed to clear split");
             }
         } else {
-            alert("Enter a valid amount to clear!");
+            message.warning("Enter a valid amount to clear!");
         }
     };
-    
-    // const handleAddExpense = async (e) => {
-    //     e.preventDefault();
-    //     const totalShares = Object.values(participantShares)
-    //         .map(Number)
-    //         .reduce((sum, val) => sum + val, 0);
 
-    //     if (totalShares !== Number(amount)) {
-    //         setError('Total shares do not match the expense amount');
-    //         return;
-    //     }
-
-    //     const expenseData = {
-    //         description: expenseName,
-    //         amount,
-    //         payer_id: payerId,
-    //         split_type: 'custom',
-    //         participantShares,
-    //         category,
-    //     };
-
-    //     try {
-    //         const response = await fetch('http://localhost:3000/api/expenses', {
-    //             method: 'POST',
-    //             headers: { 'Content-Type': 'application/json' },
-    //             body: JSON.stringify(expenseData),
-    //         });
-    //         const data = await response.json();
-    //         if (data.error) {
-    //             setError(data.error);
-    //         } else {
-    //             setExpenses([...expenses, data.expense]);
-    //             setExpenseName('');
-    //             setAmount('');
-    //             setPayerId('');
-    //             setParticipantShares({});
-    //             setCategory('General');
-    //         }
-    //     } catch (error) {
-    //         setError('Error adding expense');
-    //         console.error(error);
-    //     }
-    // };
     const updateSummary = (updatedSplits) => {
         const totalAmount = updatedSplits.reduce((acc, split) => acc + split.amount, 0);
-        console.log("Total balance after update:", totalAmount);
-        // You can store the total balance in state and update the summary UI accordingly
     };
-    const handleAddExpense = async (e) => {
-        e.preventDefault();
-    
-        // Validate the total shares match the expense amount
+
+    const handleSplitChange = (index, field, value) => {
+        const updatedSplits = [...editedExpense.splits];
+        updatedSplits[index][field] = value;
+        setEditedExpense(prev => ({
+            ...prev,
+            splits: updatedSplits,
+        }));
+    };
+
+    const handleAddExpense = async (values) => {
         const totalShares = Object.values(participantShares)
             .map((value) => Number(value))
             .reduce((sum, val) => sum + val, 0);
     
         if (totalShares !== Number(amount)) {
-            setError('Total shares do not match the expense amount');
+            message.error('Total shares do not match the expense amount');
             return;
         }
     
-        // Create splits array from participantShares
-        console.log('Participants:', participants);
         const splits = Object.entries(participantShares)
-            .filter(([_, share]) => share) // Only include non-zero shares
-            .map(([participantId, share]) => {
-                //console.log(`Participant ID: ${participantId}, Share: ${share}`);
-                const participant = participants.find((p) => p.id === Number(participantId));
-                return {
-                    user_id: Number(participantId),
-                    user_name: participant?.name || 'UnKnown',
-                    contributed_amount: Number(share),
-                };
-            });
-        console.log("Splits: ",splits);    
+            .filter(([_, share]) => share)
+            .map(([participantId, share]) => ({
+                user_id: Number(participantId),
+                username: participants.find((p) => p.id === Number(participantId))?.username || 'Unknown',
+                contributed_amount: Number(share),
+            }));
     
         const expenseData = {
             description: expenseName,
@@ -321,870 +271,463 @@ const ExpenditureSplit = ({ splits: initialSplits, roomid}) => {
             participantShares: splits,
             category,
         };
-        
-        console.log('Splits Array:', splits);
-
-        console.log('Expense Data:', expenseData);
-
-
+    
         try {
-            // Submit to the API
-            const response = await fetch('http://localhost:3000/api/expenses', {
+            const response = await fetch('http://localhost:3004/api/expenses', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(expenseData),
             });
     
             const data = await response.json();
-    
+            
             if (!response.ok) {
                 throw new Error(data.error || 'Failed to add expense');
             }
+            
             await fetchSplits();
-
-            const newExpense = { ...data.expense, splits };
-            const updatedSplits = calculateSplits([...expenses, newExpense]);
-            setSplits(updatedSplits);
-            // Update state with the new expense
-            setExpenses([...expenses, { ...data.expense, splits }]);
+            setExpenses(prev => [...prev, { ...data.expense, splits }]);
+            form.resetFields();
             setExpenseName('');
             setAmount('');
             setPayerId('');
             setParticipantShares({});
             setCategory('General');
-            fetchSplits();
-            setSplits()
-            setError(''); // Clear any previous errors
+            message.success('Expense added successfully');
+            
         } catch (error) {
-            setError(error.message || 'Error adding expense');
-            console.error(error);
+            message.error(error.message || 'Error adding expense');
         }
     };
-    
-    
+
     const handleDeleteExpense = async (expenseId) => {
         try {
-            // await fetch(`http://localhost:3000/api/expenses/${expenseId}`, { method: 'DELETE' });
-            // setExpenses(expenses.filter(exp => exp.id !== expenseId));
-            // await fetchSplits();
-            // const updatedSplits = calculateSplits(expenses.filter(exp => exp.id !== expenseId));
-            // console.log("Updated Splits",updatedSplits);
-            // setSplits(updatedSplits);
-            // Delete the expense from the server
-            await fetch(`http://localhost:3000/api/expenses/${expenseId}`, { method: 'DELETE' });
-
-            const updatedExpenses = expenses.filter(exp => exp.id !== expenseId);
-            setExpenses(updatedExpenses); 
-            console.log("Updated Expenses:", updatedExpenses);
-
-                await fetchSplits();
-
-                const updatedSplits = calculateSplits(updatedExpenses);
-                setSplits(updatedSplits);
-
+            await fetch(`http://localhost:3004/api/expenses/${expenseId}`, { 
+                method: 'DELETE' 
+            });
+            setExpenses(prev => prev.filter(exp => exp.id !== expenseId));
+            message.success('Expense deleted successfully');
+            await fetchSplits();
         } catch (error) {
-            setError('Error deleting expense');
-            console.error(error);
+            message.error('Error deleting expense');
         }
     };
-    
+
+    const handleEditClick = (expense) => {
+        setEditMode(expense.id);
+        setEditedExpense({ ...expense });
+    };
+
+    const handleSave = () => {
+        const updatedData = editedExpense;
+        const expenseId = editMode;
+        
+        const totalShares = updatedData.splits
+            .map((split) => Number(split.contributed_amount))
+            .reduce((sum, val) => sum + val, 0);
+            
+        if (totalShares !== Number(updatedData.amount)) {
+            setErrors(prev => ({
+                ...prev,
+                [expenseId]: 'Total shares do not match the expense amount'
+            }));
+            return;
+        }
+
+        handleUpdateExpense(editMode, editedExpense);
+        setErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors[expenseId];
+            return newErrors;
+        });
+        setEditMode(null);
+    };
+
     const handleUpdateExpense = async (expenseId, updatedData) => {
         try {
-            // Send PUT request to update the expense
-            await fetch(`http://localhost:3000/api/expenses/${expenseId}`, {
-                method: 'PUT',
+            const response = await fetch('http://localhost:3004/api/updateexpenses', {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedData),
+                body: JSON.stringify({ expenseId, updatedData }),
             });
     
-            // After updating, fetch the updated list of all expenses
-            const response = await fetch('http://localhost:3000/api/expenses');
-            const updatedExpenses = await response.json();
-    
-            // Update the state with the new list of expenses
-            setExpenses(updatedExpenses);
-            console.log("Updated Expenses: ",updatedExpenses);
+            if (!response.ok) {
+                throw new Error('Failed to update expense');
+            }
+            
+            await fetchExpenses();
+            await fetchSplits();
+            message.success('Expense updated successfully');
+            
         } catch (error) {
-            setError('Error updating expense');
-            console.error(error);
+            message.error('Error updating expense');
         }
     };
-    
-    if (!splits || !Array.isArray(splits)) {
-        return (
-            (<>
-            <Helmet>
-                <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
-            </Helmet>
-        <div className="expenditure-split">
-            <h2>Expense Split</h2>
-            <form onSubmit={handleAddExpense}>
-                <div>
-                    <label>Expense Name</label>
-                    <input
-                        type="text"
-                        value={expenseName}
-                        onChange={(e) => setExpenseName(e.target.value)}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Amount</label>
-                    <input
-                        type="number"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Payer</label>
-                    <select
-                        value={payerId}
-                        onChange={(e) => setPayerId(e.target.value)}
-                        required
-                    >
-                        <option value="">Select Payer</option>
-                        {participants && participants.length > 0 && participants.map((participant) => (
-                            <option key={participant.id} value={participant.id}>
-                                {participant.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label>Category</label>
-                    <select
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        required
-                    >
-                        {categories.map((cat) => (
-                            <option key={cat} value={cat}>
-                                {cat}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    {participants && participants.length > 0 && participants.map((participant) => (
-                        <div key={participant.id}>
-                            <label>{participant.name}</label>
-                            <input
-                                type="number"
-                                value={participantShares[participant.id] || ''}
-                                onChange={(e) =>
-                                    handleShareChange(participant.id, e.target.value)
-                                }
-                                placeholder="Enter share"
-                                required
-                            />
-                        </div>
-                    ))}
-                </div>
-                <button type="submit">Add Expense</button>
-            </form>
 
-            {error && <div className="error">{error}</div>}
-            <div className="split-payments">
-                <h3>Pending Splits: </h3>
-                <p>All payments are settled!</p>
-            </div>
-            <div className="recorded-payments">
-                <h3>Payment Summary: </h3>
-                {clearedSplits.length > 0 ? (
-                    clearedSplits.map((clearedSplit) => (
-                        <div key={clearedSplit} className="split-item">
-                            <p>
-                                {clearedSplit.debtor} Paid ${parseFloat(clearedSplit.amount).toFixed(2)} to {clearedSplit.creditor} !!
-                            </p>
-                        </div>
-                    ))
-                ) : (
-                    <p>No Payments are recorded Yet!</p>
-                )}
-            </div>
-
-            
-
-            <h3>Expenses</h3>
-            {loading ? (
-                <p>Loading expenses...</p>
-            ) : (
-                // <ul>
-                //     {expenses.map((expense) => (
-                //         <li key={expense.id}>
-                //             <p><span>{expense.description}</span></p>
-                //             <p><span>Expense Amount: {expense.amount}</span></p>
-                //             {expense.splits.map((split, index) => (
-                //                 <p key={index}><span>{split.user_name} - {split.contributed_amount}</span></p>
-                //             ))}
-                            
-                //             <button onClick={() => handleDeleteExpense(expense.id)}>Delete</button>
-                //             <button
-                //                 onClick={() =>
-                //                     handleUpdateExpense(expense.id, {
-                //                         description: 'Updated Expense',
-                //                         amount: 100,
-                //                         payer_id: expense.payer_id,
-                //                         split_type: 'custom',
-                //                         participantShares: expense.splits,
-                //                         category: expense.category,
-                //                     })
-                //                 }
-                //             >
-                //                 Update
-                //             </button>
-                //         </li>
-                //     ))}
-                // </ul>
-                <ul className="expense-list">
-                    {expenses.map((expense) => (
-                        <li key={expense.id} className="expense-card">
-                            <div className="expense-header">
-                                <h3>{expense.description} - Paid by {expense.payer_name}</h3>
-                                <p className="expense-amount">${expense.amount}</p>
-                            </div>
-                            <p className="expense-category">{expense.category}</p>
-                            <table className="splits-table">
-                                <thead>
-                                    <tr>
-                                        <th>User</th>
-                                        <th>Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {expense.splits.map((split, index) => (
-                                        <tr key={index}>
-                                            <td>{split.user_name}</td>
-                                            <td>${split.contributed_amount}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                            <div className="expense-actions">
-                                <button className="delete-btn" onClick={() => handleDeleteExpense(expense.id)}>
-                                    🗑 Delete
-                                </button>
-                                <button
-                                    className="update-btn"
-                                    onClick={() =>
-                                        handleUpdateExpense(expense.id, {
-                                            description: 'Updated Expense',
-                                            amount: 100,
-                                            payer_id: expense.payer_id,
-                                            split_type: 'custom',
-                                            participantShares: expense.splits,
-                                            category: expense.category,
-                                        })
-                                    }
-                                >
-                                    ✏️ Update
-                                </button>
-                            </div>
-                        </li>
-                    ))}
-                </ul>
-            )}
-        </div>
-    </>));
-    }
     return (
-        // <div className="expenditure-split">
-        //     <h2>Expense Split</h2>
-        //     <form onSubmit={handleAddExpense}>
-        //         <div>
-        //             <label>Expense Name</label>
-        //             <input
-        //                 type="text"
-        //                 value={expenseName}
-        //                 onChange={(e) => setExpenseName(e.target.value)}
-        //                 required
-        //             />
-        //         </div>
-        //         <div>
-        //             <label>Amount</label>
-        //             <input
-        //                 type="number"
-        //                 value={amount}
-        //                 onChange={(e) => setAmount(e.target.value)}
-        //                 required
-        //             />
-        //         </div>
-        //         <div>
-        //             <label>Payer</label>
-        //             <select
-        //                 value={payerId}
-        //                 onChange={(e) => setPayerId(e.target.value)}
-        //                 required
-        //             >
-        //                 <option value="">Select Payer</option>
-        //                 {participants && participants.length > 0 && participants.map((participant) => (
-        //                     <option key={participant.id} value={participant.id}>
-        //                         {participant.name}
-        //                     </option>
-        //                 ))}
-        //             </select>
-        //         </div>
-        //         <div>
-        //             <label>Category</label>
-        //             <select
-        //                 value={category}
-        //                 onChange={(e) => setCategory(e.target.value)}
-        //                 required
-        //             >
-        //                 {categories.map((cat) => (
-        //                     <option key={cat} value={cat}>
-        //                         {cat}
-        //                     </option>
-        //                 ))}
-        //             </select>
-        //         </div>
-        //         <div>
-        //             {participants && participants.length > 0 && participants.map((participant) => (
-        //                 <div key={participant.id}>
-        //                     <label>{participant.name}</label>
-        //                     <input
-        //                         type="number"
-        //                         value={participantShares[participant.id] || ''}
-        //                         onChange={(e) =>
-        //                             handleShareChange(participant.id, e.target.value)
-        //                         }
-        //                         placeholder="Enter share"
-        //                         required
-        //                     />
-        //                 </div>
-        //             ))}
-        //         </div>
-        //         <button type="submit">Add Expense</button>
-        //     </form>
+        <Layout className="expense-split-layout">
+            <Card className="expense-form-card">
+                <Title level={2}>Add New Expense</Title>
+                <Form
+                    form={form}
+                    layout="vertical"
+                    onFinish={handleAddExpense}
+                >
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item
+                                label="Expense Name"
+                                rules={[{ required: true, message: 'Please enter expense name' }]}
+                            >
+                                <Input 
+                                    prefix={<DollarOutlined />}
+                                    value={expenseName}
+                                    onChange={(e) => setExpenseName(e.target.value)}
+                                    placeholder="Enter expense name"
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                label="Amount"
+                                rules={[{ required: true, message: 'Please enter amount' }]}
+                            >
+                                <InputNumber
+                                    style={{ width: '100%' }}
+                                    value={amount}
+                                    onChange={(value) => setAmount(value)}
+                                    placeholder="Enter amount"
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
 
-        //     {error && <div className="error">{error}</div>}
-        //     <div className="split-payments">
-        //         <h3>Pending Splits: </h3>
-        //         {splits.length > 0 ? (
-        //             splits.map((split) => (
-        //                 // <div key={split.id} className="split-item">
-        //                 //     <p>
-        //                 //         {split.debtor} owes ${split.amount.toFixed(2)} to {split.creditor}
-        //                 //     </p>
-        //                 //     <input
-        //                 //         type="number"
-        //                 //         placeholder="Enter amount"
-        //                 //         value={paymentAmounts[split.id] || 0}
-        //                 //         onChange={(e) => handleInputChange(split.id, parseFloat(e.target.value)||0)}
-        //                 //     />
-        //                 //     <button onClick={() => clearSplit(split.id, paymentAmounts[split.id]||0)}>
-        //                 //         Clear Split
-        //                 //     </button>
-        //                 // </div>
-        //                 <div key={split.id} className="split-item">
-        //                     <p className="split-info">
-        //                         {split.debtor} owes <span>${split.amount.toFixed(2)}</span> to {split.creditor}
-        //                     </p>
-        //                     <div className="action-row">
-        //                         <input
-        //                             type="number"
-        //                             placeholder="Enter amount"
-        //                             value={paymentAmounts[split.id] || 0}
-        //                             onChange={(e) => handleInputChange(split.id, parseFloat(e.target.value) || 0)}
-        //                         />
-        //                         <button onClick={() => clearSplit(split.id, paymentAmounts[split.id] || 0)}>
-        //                             Clear Split
-        //                         </button>
-        //                     </div>
-        //                 </div>
-        //             ))
-        //         ) : (
-        //             <p>All payments are settled!</p>
-        //         )}
-        //     </div>
-        //     <div className="recorded-payments">
-        //         <h3>Payment Summary: </h3>
-        //         {clearedSplits.length > 0 ? (
-        //             clearedSplits.map((clearedSplit) => (
-        //                 <div key={clearedSplit} className="split-item">
-        //                     <p>
-        //                         {clearedSplit.debtor} Paid ${parseFloat(clearedSplit.amount).toFixed(2)} to {clearedSplit.creditor} !!
-        //                     </p>
-        //                 </div>
-        //             ))
-        //         ) : (
-        //             <p>No Payments are recorded Yet!</p>
-        //         )}
-        //     </div>
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item
+                                label="Payer"
+                                rules={[{ required: true, message: 'Please select payer' }]}
+                            >
+                                <Select
+                                    value={payerId}
+                                    onChange={(value) => setPayerId(value)}
+                                    placeholder="Select payer"
+                                >
+                                    {participants.map((participant) => (
+                                        <Option key={participant.id} value={participant.id}>
+                                            {participant.name}
+                                        </Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                label="Category"
+                                rules={[{ required: true, message: 'Please select category' }]}
+                            >
+                                <Select
+                                    value={category}
+                                    onChange={(value) => setCategory(value)}
+                                    placeholder="Select category"
+                                >
+                                    {categories.map((cat) => (
+                                        <Option key={cat} value={cat}>{cat}</Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                    </Row>
 
-        //     <h3>Expenses</h3>
-        //     {loading ? (
-        //         <p>Loading expenses...</p>
-        //     ) : (
-        //         // <ul>
-        //         //     {expenses.map((expense) => (
-        //         //         <li key={expense.id}>
-        //         //             <p><span>{expense.description}</span></p>
-        //         //             <p><span>Expense Amount: {expense.amount}</span></p>
-        //         //             {expense.splits.map((split, index) => (
-        //         //                 <p key={index}><span>{split.user_name} - {split.contributed_amount}</span></p>
-        //         //             ))}
-                            
-        //         //             <button onClick={() => handleDeleteExpense(expense.id)}>Delete</button>
-        //         //             <button
-        //         //                 onClick={() =>
-        //         //                     handleUpdateExpense(expense.id, {
-        //         //                         description: 'Updated Expense',
-        //         //                         amount: 100,
-        //         //                         payer_id: expense.payer_id,
-        //         //                         split_type: 'custom',
-        //         //                         participantShares: expense.splits,
-        //         //                         category: expense.category,
-        //         //                     })
-        //         //                 }
-        //         //             >
-        //         //                 Update
-        //         //             </button>
-        //         //         </li>
-        //         //     ))}
-        //         // </ul>
-        //         <ul className="expense-list">
-        //             {expenses.reverse().map((expense) => (
-        //                 <li key={expense.id} className="expense-card">
-        //                     <div className="expense-header">
-        //                         <h3>{expense.description} - Paid by {expense.payer_name}</h3>
-        //                         <p className="expense-amount">${expense.amount}</p>
-        //                     </div>
-        //                     <p className="expense-category">{expense.category}</p>
-        //                     <table className="splits-table">
-        //                         <thead>
-        //                             <tr>
-        //                                 <th>User</th>
-        //                                 <th>Amount</th>
-        //                             </tr>
-        //                         </thead>
-        //                         <tbody>
-        //                             {expense.splits.map((split, index) => (
-        //                                 <tr key={index}>
-        //                                     <td>{split.user_name}</td>
-        //                                     <td>${split.contributed_amount}</td>
-        //                                 </tr>
-        //                             ))}
-        //                         </tbody>
-        //                     </table>
-        //                     <div className="expense-actions">
-        //                         <button className="delete-btn" onClick={() => handleDeleteExpense(expense.id)}>
-        //                             🗑 Delete
-        //                         </button>
-        //                         <button
-        //                             className="update-btn"
-        //                             onClick={() =>
-        //                                 handleUpdateExpense(expense.id, {
-        //                                     description: 'Updated Expense',
-        //                                     amount: 100,
-        //                                     payer_id: expense.payer_id,
-        //                                     split_type: 'custom',
-        //                                     participantShares: expense.splits,
-        //                                     category: expense.category,
-        //                                 })
-        //                             }
-        //                         >
-        //                             ✏️ Update
-        //                         </button>
-        //                     </div>
-        //                 </li>
-        //             ))}
-        //         </ul>
-        //     )}
-        // </div>
-        // -------------------------
-        //--------------------------
-        (<>
-            <Helmet>
-                <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
-            </Helmet>
-        <div className="expenditure-split">
-            <h2>Expense Split</h2>
-            <form onSubmit={handleAddExpense}>
-            <div>
-                     <label>Expense Name</label>
-                     <input
-                        type="text"
-                        value={expenseName}
-                        onChange={(e) => setExpenseName(e.target.value)}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Amount</label>
-                    <input
-                        type="number"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Payer</label>
-                    <select
-                        value={payerId}
-                        onChange={(e) => setPayerId(e.target.value)}
-                        required
-                    >
-                        <option value="">Select Payer</option>
-                        {participants && participants.length > 0 && participants.map((participant) => (
-                            <option key={participant.id} value={participant.id}>
-                                {participant.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label>Category</label>
-                    <select
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        required
-                    >
-                        {categories.map((cat) => (
-                            <option key={cat} value={cat}>
-                                {cat}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    {participants && participants.length > 0 && participants.map((participant) => (
-                        <div key={participant.id}>
-                            <label>{participant.name}</label>
-                            <input
-                                type="number"
+                    <Divider>Share Details</Divider>
+
+                    {participants.map((participant) => (
+                        <Form.Item
+                            key={participant.id}
+                            label={participant.name}
+                        >
+                            <InputNumber
+                                style={{ width: '100%' }}
                                 value={participantShares[participant.id] || ''}
-                                onChange={(e) =>
-                                    handleShareChange(participant.id, e.target.value)
-                                }
-                                placeholder="Enter share"
-                                required
+                                onChange={(value) => handleShareChange(participant.id, value)}
+                                placeholder="Enter share amount"
                             />
-                        </div>
+                        </Form.Item>
                     ))}
-                </div>
-                <button type="submit">Add Expense</button>
-            </form>
-            {error && <div className="error">{error}</div>}
 
-            {/* Toggle Buttons */}
-            <div className="toggle-buttons">
-                <button onClick={() => setShowPendingSplits(!showPendingSplits)}>
-                    {showPendingSplits ? 'Hide Pending Splits' : 'Show Pending Splits'}
-                </button>
-                <button onClick={() => setShowClearedSplits(!showClearedSplits)}>
-                    {showClearedSplits ? 'Hide Cleared Splits' : 'Show Cleared Splits'}
-                </button>
-                <button onClick={() => setShowExpenses(!showExpenses)}>
-                    {showExpenses ? 'Hide Expenses' : 'Show Expenses'}
-                </button>
-            </div>
+                    <Form.Item>
+                        <Button 
+                            type="primary" 
+                            htmlType="submit" 
+                            icon={<PlusOutlined />}
+                            block
+                        >
+                            Add Expense
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </Card>
 
-            {/* Pending Splits Section */}
-            {showPendingSplits && (
-                <div className="split-payments">
-                    
-                    {splits.length > 0 ? (
-                        splits.map((split) => (
-                            <div key={split.id} className="split-item">
-                                <p className="split-info">
-                                    {split.debtor} owes <span>${split.amount.toFixed(2)}</span> to {split.creditor}
-                                </p>
-                                <div className="action-row">
-                                    <input
-                                        type="number"
-                                        placeholder="Enter amount"
-                                        value={paymentAmounts[split.id] || 0}
-                                        onChange={(e) => handleInputChange(split.id, parseFloat(e.target.value) || 0)}
-                                    />
-                                    <button onClick={() => clearSplit(split.id, paymentAmounts[split.id] || 0)}>
-                                        Clear Split
-                                    </button>
-                                </div>
+            {error && (
+                <Alert 
+                    message={error} 
+                    type="error" 
+                    showIcon 
+                    closable 
+                    style={{ marginBottom: 16 }} 
+                />
+            )}
+
+            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                <Card>
+                    <Space className="toggle-buttons">
+                        <Button 
+                            type={showPendingSplits ? "primary" : "default"}
+                            onClick={() => setShowPendingSplits(!showPendingSplits)}
+                        >
+                            {showPendingSplits ? 'Hide Pending Splits' : 'Show Pending Splits'}
+                        </Button>
+                        <Button 
+                            type={showClearedSplits ? "primary" : "default"}
+                            onClick={() => setShowClearedSplits(!showClearedSplits)}
+                        >
+                            {showClearedSplits ? 'Hide Cleared Splits' : 'Show Cleared Splits'}
+                        </Button>
+                        <Button 
+                            type={showExpenses ? "primary" : "default"}
+                            onClick={() => setShowExpenses(!showExpenses)}
+                        >
+                            {showExpenses ? 'Hide Expenses' : 'Show Expenses'}
+                        </Button>
+                    </Space>
+                </Card>
+
+                {showPendingSplits && (
+                    <Card title={<Title level={4}>Pending Splits</Title>}>
+                        <div className="split-payments">
+                            {splits.length > 0 ? (
+                                splits.map((split) => (
+                                    <Card key={split.id} className="split-item">
+                                        <div className="split-info">
+                                            <Space>
+                                                <UserOutlined />
+                                                <span>{split.debtor} owes</span>
+                                                <Tag color="blue">${split.amount.toFixed(2)}</Tag>
+                                                <span>to {split.creditor}</span>
+                                            </Space>
+                                        </div>
+                                        <div className="action-row">
+                                            <InputNumber
+                                                placeholder="Enter amount"
+                                                value={paymentAmounts[split.id] || 0}
+                                                onChange={(value) => handleInputChange(split.id, value)}
+                                                style={{ width: 200 }}
+                                            />
+                                            <Button 
+                                                type="primary"
+                                                onClick={() => clearSplit(split.id, paymentAmounts[split.id] || 0)}
+                                            >
+                                                Clear Split
+                                            </Button>
+                                        </div>
+                                    </Card>
+                                ))
+                            ) : (
+                                <Empty description="All payments are settled!" />
+                            )}
+                        </div>
+                    </Card>
+                )}
+
+                {showClearedSplits && (
+                    <Card title={<Title level={4}>Payment Summary</Title>}>
+                        <div className="recorded-payments">
+                            {clearedSplits.length > 0 ? (
+                                clearedSplits.map((clearedSplit, index) => (
+                                    <Card key={index} className="split-item">
+                                        <Space>
+                                            <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                                            <Tag className="date-box">{formatDate(clearedSplit.cleared_at)}</Tag>
+                                            <span>{clearedSplit.debtor} Paid</span>
+                                            <Tag color="blue">${parseFloat(clearedSplit.amount).toFixed(2)}</Tag>
+                                            <span>to {clearedSplit.creditor}</span>
+                                        </Space>
+                                    </Card>
+                                ))
+                            ) : (
+                                <Empty description="No Payments are recorded yet!" />
+                            )}
+                        </div>
+                    </Card>
+                )}
+
+                {showExpenses && (
+                    <Card title={<Title level={4}>Expenses</Title>}>
+                        {loading ? (
+                            <div style={{ textAlign: 'center', padding: '20px' }}>
+                                <Spin size="large" />
                             </div>
-                        ))
-                    ) : (
-                        <p>All payments are settled!</p>
-                    )}
-                </div>
-            )}
+                        ) : expenses.length === 0 ? (
+                            <Empty description="No expenses yet!" />
+                        ) : (
+                            expenses.reverse().map((expense) => (
+                                <Card 
+                                    key={expense.id} 
+                                    className="expense-card"
+                                    style={{ marginBottom: 16 }}
+                                >
+                                    {editMode === expense.id ? (
+                                        <div className="edit-mode">
+                                            <Form layout="vertical">
+                                                <Row gutter={16}>
+                                                    <Col span={12}>
+                                                        <Form.Item label="Description">
+                                                            <Input
+                                                                value={editedExpense.description}
+                                                                onChange={(e) => handleChange('description', e.target.value)}
+                                                            />
+                                                        </Form.Item>
+                                                    </Col>
+                                                    <Col span={12}>
+                                                        <Form.Item label="Amount">
+                                                            <InputNumber
+                                                                style={{ width: '100%' }}
+                                                                value={editedExpense.amount}
+                                                                onChange={(value) => handleChange('amount', value)}
+                                                            />
+                                                        </Form.Item>
+                                                    </Col>
+                                                </Row>
 
-            {/* Cleared Splits Section */}
-            {showClearedSplits && (
-                <div>
-                    <h3>Payment Summary: </h3>
-                <div className="recorded-payments">
-                    
-                    {clearedSplits.length > 0 ? (
-                        clearedSplits.map((clearedSplit) => (
-                            <div key={clearedSplit} className="split-item">
-                                <p>
-                                    {clearedSplit.debtor} Paid ${parseFloat(clearedSplit.amount).toFixed(2)} to {clearedSplit.creditor} !!
-                                </p>
-                            </div>
-                        ))
-                    ) : (
-                        <p>No Payments are recorded Yet!</p>
-                    )}
-                </div>
-                </div>
-            )}
+                                                <Form.Item label="Paid By">
+                                                    <Select
+                                                        value={payerId}
+                                                        onChange={(value) => setPayerId(value)}
+                                                    >
+                                                        {participants.map((participant) => (
+                                                            <Option key={participant.id} value={participant.id}>
+                                                                {participant.name}
+                                                            </Option>
+                                                        ))}
+                                                    </Select>
+                                                </Form.Item>
 
-            {/* Expenses Section */}
-            {showExpenses && (
-                <div>
-                    <h3>Expenses</h3>
-                    {loading ? (
-                        <p>Loading expenses...</p>
-                    ) : (
-                        <ul className="expense-list">
-                            {expenses.reverse().map((expense) => (
-                                <li key={expense.id} className="expense-card">
-                                    <div className="expense-header">
-                                        <h3>{expense.description} - Paid by {expense.payer_name}</h3>
-                                        <p className="expense-amount">${expense.amount}</p>
-                                    </div>
-                                    <p className="expense-category">{expense.category}</p>
-                                    <table className="splits-table">
-                                        <thead>
-                                            <tr>
-                                                <th>User</th>
-                                                <th>Amount</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {expense.splits.map((split, index) => (
-                                                <tr key={index}>
-                                                    <td>{split.user_name}</td>
-                                                    <td>${split.contributed_amount}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                    <div className="expense-actions">
-                                        <button className="delete-btn" onClick={() => handleDeleteExpense(expense.id)}>
-                                            🗑 Delete
-                                        </button>
-                                        <button
-                                            className="update-btn"
-                                            onClick={() =>
-                                                handleUpdateExpense(expense.id, {
-                                                    description: 'Updated Expense',
-                                                    amount: 100,
-                                                    payer_id: expense.payer_id,
-                                                    split_type: 'custom',
-                                                    participantShares: expense.splits,
-                                                    category: expense.category,
-                                                })
-                                            }
-                                        >
-                                            ✏️ Update
-                                        </button>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-            )}
-        </div>
-        </>)
-//         <div className="container">
-//     {/* Left Column: Expense Form */}
-//     <div className="left-column">
-//         <h2>Expense Split</h2>
-//         <form onSubmit={handleAddExpense}>
-//             <div>
-//                 <label>Expense Name</label>
-//                 <input
-//                     type="text"
-//                     value={expenseName}
-//                     onChange={(e) => setExpenseName(e.target.value)}
-//                     required
-//                 />
-//             </div>
-//             <div>
-//                 <label>Amount</label>
-//                 <input
-//                     type="number"
-//                     value={amount}
-//                     onChange={(e) => setAmount(e.target.value)}
-//                     required
-//                 />
-//             </div>
-//             <div>
-//                 <label>Payer</label>
-//                 <select
-//                     value={payerId}
-//                     onChange={(e) => setPayerId(e.target.value)}
-//                     required
-//                 >
-//                     <option value="">Select Payer</option>
-//                     {participants && participants.length > 0 && participants.map((participant) => (
-//                         <option key={participant.id} value={participant.id}>
-//                             {participant.name}
-//                         </option>
-//                     ))}
-//                 </select>
-//             </div>
-//             <div>
-//                 <label>Category</label>
-//                 <select
-//                     value={category}
-//                     onChange={(e) => setCategory(e.target.value)}
-//                     required
-//                 >
-//                     {categories.map((cat) => (
-//                         <option key={cat} value={cat}>
-//                             {cat}
-//                         </option>
-//                     ))}
-//                 </select>
-//             </div>
-//             <div>
-//                 {participants && participants.length > 0 && participants.map((participant) => (
-//                     <div key={participant.id}>
-//                         <label>{participant.name}</label>
-//                         <input
-//                             type="number"
-//                             value={participantShares[participant.id] || ''}
-//                             onChange={(e) =>
-//                                 handleShareChange(participant.id, e.target.value)
-//                             }
-//                             placeholder="Enter share"
-//                             required
-//                         />
-//                     </div>
-//                 ))}
-//             </div>
-//             <button type="submit">Add Expense</button>
-//         </form>
-//     </div>
+                                                <Form.Item label="Category">
+                                                    <Select
+                                                        value={category}
+                                                        onChange={(value) => setCategory(value)}
+                                                    >
+                                                        {categories.map((cat) => (
+                                                            <Option key={cat} value={cat}>{cat}</Option>
+                                                        ))}
+                                                    </Select>
+                                                </Form.Item>
 
-//     {/* Right Column: Expenses, Pending Splits, and Cleared Splits */}
-//     <div className="right-column">
-//         <h3>Expense Summary</h3>
+                                                <Table
+                                                    dataSource={editedExpense.splits}
+                                                    columns={[
+                                                        { title: 'User', dataIndex: 'username' },
+                                                        {
+                                                            title: 'Amount',
+                                                            dataIndex: 'contributed_amount',
+                                                            render: (_, record, index) => (
+                                                                <InputNumber
+                                                                    value={record.contributed_amount}
+                                                                    onChange={(value) => 
+                                                                        handleSplitChange(index, 'contributed_amount', value)
+                                                                    }
+                                                                />
+                                                            )
+                                                        }
+                                                    ]}
+                                                    pagination={false}
+                                                />
 
-//         {/* Expenses Section */}
-//         <div className="section expense-section">
-//             <h4>Expenses</h4>
-//             <div className="scrollable-section">
-//                 {loading ? (
-//                     <p>Loading expenses...</p>
-//                 ) : (
-//                     <ul className="expense-list">
-//                         {expenses.reverse().map((expense) => (
-//                             <li key={expense.id} className="expense-card">
-//                                 <div className="expense-header">
-//                                     <h3>{expense.description} - Paid by {expense.payer_name}</h3>
-//                                     <p className="expense-amount">${expense.amount}</p>
-//                                 </div>
-//                                 <p className="expense-category">{expense.category}</p>
-//                                 <table className="splits-table">
-//                                     <thead>
-//                                         <tr>
-//                                             <th>User</th>
-//                                             <th>Amount</th>
-//                                         </tr>
-//                                     </thead>
-//                                     <tbody>
-//                                         {expense.splits.map((split, index) => (
-//                                             <tr key={index}>
-//                                                 <td>{split.user_name}</td>
-//                                                 <td>${split.contributed_amount}</td>
-//                                             </tr>
-//                                         ))}
-//                                     </tbody>
-//                                 </table>
-//                                 <div className="expense-actions">
-//                                     <button className="delete-btn" onClick={() => handleDeleteExpense(expense.id)}>
-//                                         🗑 Delete
-//                                     </button>
-//                                     <button
-//                                         className="update-btn"
-//                                         onClick={() =>
-//                                             handleUpdateExpense(expense.id, {
-//                                                 description: 'Updated Expense',
-//                                                 amount: 100,
-//                                                 payer_id: expense.payer_id,
-//                                                 split_type: 'custom',
-//                                                 participantShares: expense.splits,
-//                                                 category: expense.category,
-//                                             })
-//                                         }
-//                                     >
-//                                         ✏️ Update
-//                                     </button>
-//                                 </div>
-//                             </li>
-//                         ))}
-//                     </ul>
-//                 )}
-//             </div>
-//         </div>
+                                                {errors[expense.id] && (
+                                                    <Alert 
+                                                        message={errors[expense.id]} 
+                                                        type="error" 
+                                                        showIcon 
+                                                        style={{ marginTop: 16 }} 
+                                                    />
+                                                )}
 
-//         {/* Pending Splits Section */}
-//         <div className="section pending-splits-section">
-//             <h4>Pending Splits</h4>
-//             <div className="scrollable-section">
-//                 {splits.length > 0 ? (
-//                     splits.map((split) => (
-//                         <div key={split.id} className="split-item">
-//                             <p className="split-info">
-//                                 {split.debtor} owes <span>${split.amount.toFixed(2)}</span> to {split.creditor}
-//                             </p>
-//                             <div className="action-row">
-//                                 <input
-//                                     type="number"
-//                                     placeholder="Enter amount"
-//                                     value={paymentAmounts[split.id] || 0}
-//                                     onChange={(e) => handleInputChange(split.id, parseFloat(e.target.value) || 0)}
-//                                 />
-//                                 <button onClick={() => clearSplit(split.id, paymentAmounts[split.id] || 0)}>
-//                                     Clear Split
-//                                 </button>
-//                             </div>
-//                         </div>
-//                     ))
-//                 ) : (
-//                     <p>All payments are settled!</p>
-//                 )}
-//             </div>
-//         </div>
+                                                <Space style={{ marginTop: 16 }}>
+                                                    <Button type="primary" onClick={handleSave}>
+                                                        Save
+                                                    </Button>
+                                                    <Button onClick={() => setEditMode(null)}>
+                                                        Cancel
+                                                    </Button>
+                                                </Space>
+                                            </Form>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="expense-header">
+                                                <Space>
+                                                    <DollarOutlined />
+                                                    <span>{expense.description} - Paid by {expense.payer_name}</span>
+                                                </Space>
+                                                <Tag color="blue" className="expense-amount">
+                                                    ${expense.amount}
+                                                </Tag>
+                                            </div>
+                                            <Tag color="purple" style={{ margin: '8px 0' }}>
+                                                {expense.category}
+                                            </Tag>
+                                            <Table
+                                                dataSource={expense.splits}
+                                                columns={[
+                                                    { title: 'User', dataIndex: 'username' },
+                                                    { 
+                                                        title: 'Amount', 
+                                                        dataIndex: 'contributed_amount',
+                                                        render: (amount) => `$${amount}`
+                                                    }
+                                                ]}
+                                                pagination={false}
+                                            />
+                                            <div className="expense-actions" style={{ marginTop: 16 }}>
+                                                <Button
+                                                    type="primary"
+                                                    danger
+                                                    icon={<DeleteOutlined />}
+                                                    onClick={() => handleDeleteExpense(expense.id)}
+                                                >
+                                                    Delete
+                                                </Button>
+                                                <Button
+                                                    type="primary"
+                                                    icon={<EditOutlined />}
+                                                    onClick={() => handleEditClick(expense)}
+                                                >
+                                                    Update
+                                                </Button>
+                                            </div>
+                                        </>
+                                    )}
+                                </Card>
+                            ))
+                        )}
+                    </Card>
+                )}
+            </Space>
 
-//         {/* Cleared Splits Section */}
-//         <div className="section cleared-splits-section">
-//             <h4>Cleared Splits</h4>
-//             <div className="scrollable-section">
-//                 {clearedSplits.length > 0 ? (
-//                     clearedSplits.map((clearedSplit) => (
-//                         <div key={clearedSplit.id} className="split-item">
-//                             <p>
-//                                 {clearedSplit.debtor} Paid ${parseFloat(clearedSplit.amount).toFixed(2)} to {clearedSplit.creditor} on: 
-//                                 <span className="date">{new Date(clearedSplit.cleared_at).toLocaleString('en-US', { 
-//                                     weekday: 'long', // "Monday"
-//                                     year: 'numeric', // "2024"
-//                                     month: 'long', // "December"
-//                                     day: 'numeric', // "1"
-//                                     hour: '2-digit', // "01"
-//                                     minute: '2-digit', // "28"
-//                                     second: '2-digit', // "31"
-//                                     hour12: true // "AM/PM"
-//                                 })}</span>
-//                             </p>
-//                         </div>
-//                     ))
-//                 ) : (
-//                     <p>No Payments are recorded Yet!</p>
-//                 )}
-//             </div>
-//         </div>
-//     </div>
-// </div>
-
+            <Modal
+                title="Notification"
+                visible={isModalVisible}
+                onOk={handleModalClose}
+                onCancel={handleModalClose}
+                footer={[
+                    <Button key="close" type="primary" onClick={handleModalClose}>
+                        Close
+                    </Button>
+                ]}
+            >
+                <p>{modalMessage}</p>
+            </Modal>
+        </Layout>
     );
 };
 
