@@ -68,19 +68,15 @@ CREATE TABLE IF NOT EXISTS expense_splits (
 );
 
 -- Chores table
-CREATE TABLE IF NOT EXISTS chores (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    title VARCHAR(100) NOT NULL,
-    description TEXT,
-    assigned_to INT,
-    due_date DATE,
-    status ENUM('PENDING', 'IN_PROGRESS', 'COMPLETED') DEFAULT 'PENDING',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_assigned_to (assigned_to),
-    INDEX idx_status (status),
-    INDEX idx_due_date (due_date)
-);
+CREATE TABLE `chores` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `choreName` varchar(255) NOT NULL,
+  `roommates` text NOT NULL,
+  `scheduleType` enum('Daily','Weekly','Monthly') NOT NULL,
+  `currentIndex` int NOT NULL,
+  `nextOccurrence` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+)
 
 
 
