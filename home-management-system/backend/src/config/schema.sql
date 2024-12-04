@@ -82,16 +82,7 @@ CREATE TABLE IF NOT EXISTS chores (
     INDEX idx_due_date (due_date)
 );
 
--- Chore schedule table (for recurring chores)
-CREATE TABLE IF NOT EXISTS chore_schedule (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    chore_id INT NOT NULL,
-    frequency ENUM('DAILY', 'WEEKLY', 'BIWEEKLY', 'MONTHLY') NOT NULL,
-    day_of_week INT,
-    week_of_month INT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (chore_id) REFERENCES chores(id) ON DELETE CASCADE
-);
+
 
 -- Grocery items table
 CREATE TABLE IF NOT EXISTS grocery_items (
