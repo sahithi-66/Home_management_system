@@ -62,6 +62,8 @@ router.delete('/delete/user/', async (req, res, next) => {
     try {
         const { roomid, username } = req.body;
         const userId = await User.deleteUser(username, roomid);
+        const roomcode = await Math.floor(1000 + Math.random() * 9000);
+        await User.updateRoomCode(roomid, roomcode);
         res.status(201).json({ id: userId, message: 'User deleted successfully' });
     } catch (error) {
         next(error);
