@@ -27,7 +27,7 @@ import './ChoresManagement.css';
 const { Title } = Typography;
 const { Option } = Select;
 
-const ChoresManagement = () => {
+const ChoresManagement = ( {roomid} ) => {
     const [form] = Form.useForm();
     const [chores, setChores] = useState([]);
     const [roommates, setRoommates] = useState([]);
@@ -47,7 +47,17 @@ const ChoresManagement = () => {
 
     const fetchRoommates = async () => {
         try {
-            const response = await fetch(`${API_URL}/auth`);
+
+            const response = await fetch(`${API_URL}/auth`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    roomid: roomid,
+                }),
+
+            });
             if (!response.ok) throw new Error('Failed to fetch users');
             const data = await response.json();
             console.log('Fetched roommates:', data);

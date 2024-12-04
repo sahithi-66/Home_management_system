@@ -8,11 +8,13 @@ class AuthController {
 
         try {
             const user = await User.findByUsername(username, roomid);
+            console.log(user);
             if (!user || !(await bcrypt.compare(password, user.password))) {
                 return res.status(401).json({ message: 'Invalid credentials' });
             }
-
+            console.log("assd")
             const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+            console.log(token);
             res.json({ token });
         } catch (error) {
             next(error);

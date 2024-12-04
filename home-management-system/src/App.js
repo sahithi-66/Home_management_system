@@ -26,7 +26,7 @@ const App = () => {
 
   const [isLoggedIn, setIsLoggedIn] = useState(savedIsLoggedIn || false);
   const [username, setUsername] = useState(savedUsername || '');
-  const [roomid, setRoomId] = useState(setRoomId || '');
+  const [roomid, setRoomId] = useState(savedRoomId || '');
   const [activeTab, setActiveTab] = useState('ExpenditureSplit');
 
   useEffect(() => {
@@ -63,7 +63,6 @@ const App = () => {
         if (!response.ok) throw new Error('Failed to delete user');
         
         message.success('User deleted successfully');
-        fetchChores();
     } catch (error) {
         message.error('Failed to delete user');
     }
@@ -99,7 +98,7 @@ const App = () => {
       case 'NoticeBoard':
         return <NoticeBoard />;
       case 'ChoresManagement':
-        return <ChoresManagement />;
+        return <ChoresManagement roomid={roomid} />;
       case 'GroceryManagement':
         return <GroceryManagement />;
       default:
