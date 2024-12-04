@@ -112,189 +112,189 @@ const Login = ({ onLoginSuccess, setUsername, setRoomId, onSignup }) => {
     };
 
     return (
-        <div className="login-container">
-            <Card className="login-card">
-                <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                    <div style={{ textAlign: 'center' }}>
-                        <Title level={2}>Welcome to Home Management</Title>
-                        <Title level={4}>Login</Title>
-                    </div>
+<div className="login-container">
+    <Card className="login-card">
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+            <div style={{ textAlign: 'center' }}>
+                <Title level={2}>Welcome to Home Management System</Title>
+                <Title level={4}>Login</Title>
+            </div>
 
-                    <Form
-                        form={form}
-                        name="login"
-                        onFinish={handleLogin}
-                        layout="vertical"
-                        size="large"
+            <Form
+                form={form}
+                name="login"
+                onFinish={handleLogin}
+                layout="vertical"
+                size="large"
+            >
+                <Form.Item
+                    name="roomid"
+                    rules={[
+                        { 
+                            required: true, 
+                            message: 'Please input your roomid!' 
+                        }
+                    ]}
+                >
+                    <Input 
+                        prefix={<UserOutlined />} 
+                        placeholder="Room Id"
+                    />
+                </Form.Item>
+
+                <Form.Item
+                    name="username"
+                    rules={[
+                        { 
+                            required: true, 
+                            message: 'Please input your username!' 
+                        }
+                    ]}
+                >
+                    <Input 
+                        prefix={<UserOutlined />} 
+                        placeholder="Username"
+                    />
+                </Form.Item>
+
+                <Form.Item
+                    name="password"
+                    rules={[
+                        { 
+                            required: true, 
+                            message: 'Please input your password!' 
+                        }
+                    ]}
+                >
+                    <Input.Password 
+                        prefix={<LockOutlined />} 
+                        placeholder="Password"
+                    />
+                </Form.Item>
+
+                <Form.Item>
+                    <Button 
+                        type="primary" 
+                        htmlType="submit" 
+                        icon={<LoginOutlined />}
+                        loading={loading}
+                        block
                     >
-                        <Form.Item
-                            name="roomid"
-                            rules={[
-                                { 
-                                    required: true, 
-                                    message: 'Please input your roomid!' 
-                                }
-                            ]}
-                        >
-                            <Input 
-                                prefix={<UserOutlined />} 
-                                placeholder="Room Id"
-                            />
-                        </Form.Item>
+                        Log in
+                    </Button>
+                </Form.Item>
+            </Form>
 
-                        <Form.Item
-                            name="username"
-                            rules={[
-                                { 
-                                    required: true, 
-                                    message: 'Please input your username!' 
-                                }
-                            ]}
-                        >
-                            <Input 
-                                prefix={<UserOutlined />} 
-                                placeholder="Username"
-                            />
-                        </Form.Item>
-
-                        <Form.Item
-                            name="password"
-                            rules={[
-                                { 
-                                    required: true, 
-                                    message: 'Please input your password!' 
-                                }
-                            ]}
-                        >
-                            <Input.Password 
-                                prefix={<LockOutlined />} 
-                                placeholder="Password"
-                            />
-                        </Form.Item>
-
-                        <Form.Item>
-                            <Button 
-                                type="primary" 
-                                htmlType="submit" 
-                                icon={<LoginOutlined />}
-                                loading={loading}
-                                block
-                            >
-                                Log in
-                            </Button>
-                        </Form.Item>
-                    </Form>
-
-                    <div style={{ textAlign: 'center' }}>
-                        <Space direction="horizontal" size="large">
-                            <Button 
-                                type="default" 
-                                onClick={() => setIsCreateRoomVisible(true)} 
-                                block
-                            >
-                                Create Room
-                            </Button>
-                            <Button 
-                                type="default" 
-                                onClick={() => setIsJoinRoomVisible(true)} 
-                                block
-                            >
-                                Join Room
-                            </Button>
-                        </Space>
-                    </div>
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                <Space size="middle">
+                    <Button 
+                        type="default" 
+                        onClick={() => setIsCreateRoomVisible(true)}
+                        style={{ width: '150px' }}
+                    >
+                        Create Room
+                    </Button>
+                    <Button 
+                        type="default" 
+                        onClick={() => setIsJoinRoomVisible(true)}
+                        style={{ width: '150px' }}
+                    >
+                        Join Room
+                    </Button>
                 </Space>
-            </Card>
+            </div>
+        </Space>
+    </Card>
 
-            {/* Create Room Modal */}
-            <Modal
-                title="Create Room"
-                visible={isCreateRoomVisible}
-                onCancel={() => setIsCreateRoomVisible(false)}
-                footer={null}
+    {/* Create Room Modal */}
+    <Modal
+        title="Create Room"
+        visible={isCreateRoomVisible}
+        onCancel={() => setIsCreateRoomVisible(false)}
+        footer={null}
+    >
+        <Form
+            name="createRoom"
+            onFinish={handleCreateRoom}
+            layout="vertical"
+        >
+            <Form.Item
+                name="roomid"
+                label="Room ID"
+                rules={[{ required: true, message: 'Please input a room ID!' }]}
             >
-                <Form
-                    name="createRoom"
-                    onFinish={handleCreateRoom}
-                    layout="vertical"
-                >
-                    <Form.Item
-                        name="roomid"
-                        label="Room ID"
-                        rules={[{ required: true, message: 'Please input a room ID!' }]}
-                    >
-                        <Input />
-                    </Form.Item>
-                    <Form.Item
-                        name="username"
-                        label="Username"
-                        rules={[{ required: true, message: 'Please input your username!' }]}
-                    >
-                        <Input />
-                    </Form.Item>
-                    <Form.Item
-                        name="password"
-                        label="Password"
-                        rules={[{ required: true, message: 'Please input a password!' }]}
-                    >
-                        <Input.Password />
-                    </Form.Item>
-                    <Form.Item>
-                        <Button type="primary" htmlType="submit" block>
-                            Create Room
-                        </Button>
-                    </Form.Item>
-                </Form>
-            </Modal>
+                <Input />
+            </Form.Item>
+            <Form.Item
+                name="username"
+                label="Username"
+                rules={[{ required: true, message: 'Please input your username!' }]}
+            >
+                <Input />
+            </Form.Item>
+            <Form.Item
+                name="password"
+                label="Password"
+                rules={[{ required: true, message: 'Please input a password!' }]}
+            >
+                <Input.Password />
+            </Form.Item>
+            <Form.Item>
+                <Button type="primary" htmlType="submit" block>
+                    Create Room
+                </Button>
+            </Form.Item>
+        </Form>
+    </Modal>
 
-            {/* Join Room Modal */}
-            <Modal
-                title="Join Room"
-                visible={isJoinRoomVisible}
-                onCancel={() => setIsJoinRoomVisible(false)}
-                footer={null}
+    {/* Join Room Modal */}
+    <Modal
+        title="Join Room"
+        visible={isJoinRoomVisible}
+        onCancel={() => setIsJoinRoomVisible(false)}
+        footer={null}
+    >
+        <Form
+            name="joinRoom"
+            onFinish={handleJoinRoom}
+            layout="vertical"
+        >
+            <Form.Item
+                name="roomid"
+                label="Room ID"
+                rules={[{ required: true, message: 'Please input a room ID!' }]}
             >
-                <Form
-                    name="joinRoom"
-                    onFinish={handleJoinRoom}
-                    layout="vertical"
-                >
-                    <Form.Item
-                        name="roomid"
-                        label="Room ID"
-                        rules={[{ required: true, message: 'Please input a room ID!' }]}
-                    >
-                        <Input />
-                    </Form.Item>
-                    <Form.Item
-                        name="username"
-                        label="Username"
-                        rules={[{ required: true, message: 'Please input your username!' }]}
-                    >
-                        <Input />
-                    </Form.Item>
-                    <Form.Item
-                        name="password"
-                        label="Password"
-                        rules={[{ required: true, message: 'Please input a password!' }]}
-                    >
-                        <Input.Password />
-                    </Form.Item>
-                    <Form.Item
-                        name="roomcode"
-                        label="Room Code"
-                        rules={[{ required: true, message: 'Please input the room code!' }]}
-                    >
-                        <Input />
-                    </Form.Item>
-                    <Form.Item>
-                        <Button type="primary" htmlType="submit" block>
-                            Join Room
-                        </Button>
-                    </Form.Item>
-                </Form>
-            </Modal>
-        </div>
+                <Input />
+            </Form.Item>
+            <Form.Item
+                name="username"
+                label="Username"
+                rules={[{ required: true, message: 'Please input your username!' }]}
+            >
+                <Input />
+            </Form.Item>
+            <Form.Item
+                name="password"
+                label="Password"
+                rules={[{ required: true, message: 'Please input a password!' }]}
+            >
+                <Input.Password />
+            </Form.Item>
+            <Form.Item
+                name="roomcode"
+                label="Room Code"
+                rules={[{ required: true, message: 'Please input the room code!' }]}
+            >
+                <Input />
+            </Form.Item>
+            <Form.Item>
+                <Button type="primary" htmlType="submit" block>
+                    Join Room
+                </Button>
+            </Form.Item>
+        </Form>
+    </Modal>
+</div>
     );
 };
 
