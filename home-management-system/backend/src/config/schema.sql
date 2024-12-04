@@ -10,7 +10,9 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,  -- 255 for hashed passwords
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_username (username)
+    INDEX idx_username (username),
+    is_debtor BOOLEAN DEFAULT FALSE,
+    net_amount FLoat
 );
 
 --  To store the Cleared Splits
