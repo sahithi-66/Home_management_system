@@ -17,7 +17,7 @@ import './Login.css';
 
 const { Title } = Typography;
 
-const Login = ({ onLoginSuccess, setUsername }) => {
+const Login = ({ onLoginSuccess, setUsername, setRoomId, onSignup }) => {
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
 
@@ -30,14 +30,17 @@ const Login = ({ onLoginSuccess, setUsername }) => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ 
+                    roomid: values.roomid,
                     username: values.username, 
-                    password: values.password 
+                    password: values.password,
+                    
                 }),
             });
 
             if (response.ok) {
                 const data = await response.json();
                 localStorage.setItem('token', data.token);
+                setRoomId(values.roomid);
                 setUsername(values.username);
                 message.success('Login successful!');
                 onLoginSuccess();
@@ -50,6 +53,56 @@ const Login = ({ onLoginSuccess, setUsername }) => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleCreateRoom = async (values) => {
+        try {
+            const response = await fetch('http://localhost:3000/api/auth/roomregistration', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    roomid : values.roomid,
+                    username: values.username, 
+                    password: values.password 
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                message.success('Room creation successful!');
+            }
+        } catch (error) {
+            console.error('Room creation failed:', error);
+            message.error(error.message || 'Failed to create room');
+        } 
+    };
+
+    const handleCreateUser = async (values) => {
+        try {
+            const response = await fetch('http://localhost:3000/api/auth/userregistration', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    roomid : values.roomid,
+                    username: values.username, 
+                    password: values.password,
+                    roomcode: values.roomcode
+
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                message.success('User creation successful!');
+            }
+        } catch (error) {
+            console.error('User creation failed:', error);
+            message.error(error.message || 'Failed to create user');
+        } 
     };
 
     return (
@@ -68,6 +121,22 @@ const Login = ({ onLoginSuccess, setUsername }) => {
                         layout="vertical"
                         size="large"
                     >
+
+                        <Form.Item
+                            name="roomid"
+                            rules={[
+                                { 
+                                    required: true, 
+                                    message: 'Please input your roomid!' 
+                                }
+                            ]}
+                        >
+                            <Input 
+                                prefix={<UserOutlined />} 
+                                placeholder="Room Id"
+                            />
+                        </Form.Item>
+
                         <Form.Item
                             name="username"
                             rules={[
@@ -110,6 +179,26 @@ const Login = ({ onLoginSuccess, setUsername }) => {
                             </Button>
                         </Form.Item>
                     </Form>
+
+                    <div style={{ textAlign: 'center' }}>
+                        
+                        <Space direction="horizontal" size="large">
+                            <Button 
+                                type="default" 
+                                onClick={() => onSignup('room')} 
+                                block
+                            >
+                                Create Room
+                            </Button>
+                            <Button 
+                                type="default" 
+                                onClick={() => onSignup('user')} 
+                                block
+                            >
+                                Create User
+                            </Button>
+                        </Space>
+                    </div>
                 </Space>
             </Card>
         </div>

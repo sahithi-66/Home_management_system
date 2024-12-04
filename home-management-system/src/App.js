@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Typography, Button, Space, Avatar } from 'antd';
+import { Layout, Menu, Typography, Button, Space, Avatar, message } from 'antd';
 import { 
   LogoutOutlined,
   DollarOutlined,
@@ -21,16 +21,19 @@ const { Text } = Typography;
 
 const App = () => {
   const savedUsername = localStorage.getItem('username');
+  const savedRoomId = localStorage.getItem('roomid');
   const savedIsLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
   const [isLoggedIn, setIsLoggedIn] = useState(savedIsLoggedIn || false);
   const [username, setUsername] = useState(savedUsername || '');
+  const [roomid, setRoomId] = useState(setRoomId || '');
   const [activeTab, setActiveTab] = useState('ExpenditureSplit');
 
   useEffect(() => {
     localStorage.setItem('isLoggedIn', isLoggedIn);
     localStorage.setItem('username', username);
-  }, [isLoggedIn, username]);
+    localStorage.setItem('roomid', roomid)
+  }, [isLoggedIn, username, roomid]);
 
   const handleLoginSuccess = () => {
     setIsLoggedIn(true);
@@ -39,8 +42,32 @@ const App = () => {
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUsername('');
+    setRoomId('');
     localStorage.clear();
   };
+
+  const handleUserDelete = async (values) => {
+    try {
+        const response = await fetch(`http://localhost:3000/api/delete/user/`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+              roomid: values.roomid,
+              username: values.username,
+              
+          }),
+        });
+        
+        if (!response.ok) throw new Error('Failed to delete user');
+        
+        message.success('User deleted successfully');
+        fetchChores();
+    } catch (error) {
+        message.error('Failed to delete user');
+    }
+};
 
   const menuItems = [
     {
@@ -81,7 +108,7 @@ const App = () => {
   };
 
   if (!isLoggedIn) {
-    return <Login onLoginSuccess={handleLoginSuccess} setUsername={setUsername} />;
+    return <Login onLoginSuccess={handleLoginSuccess} setUsername={setUsername} setRoomId={setRoomId} />;
   }
 
   return (

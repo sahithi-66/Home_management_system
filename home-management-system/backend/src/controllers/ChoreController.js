@@ -107,7 +107,7 @@ class ChoreController {
         // Pass error to next middleware
         next(error);
     }
-}
+    }
 }
 
 export default new ChoreController();

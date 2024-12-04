@@ -70,6 +70,6 @@ router.delete('/delete/user/', async (req, res, next) => {
 
 
 
-router.get('/', AuthController.getAllUsers);
+router.get('/:id', AuthController.getAllUsers);
 
 export default router;
