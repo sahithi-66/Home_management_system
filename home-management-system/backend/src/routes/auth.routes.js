@@ -6,10 +6,10 @@ const router = express.Router();
 
 router.post('/login', AuthController.login);
 
-router.get('/fetchcode', async (req, res, next) => {
+router.get('/fetchcode/:roomid', async (req, res, next) => {
     try {
         //console.log("room registration started");
-        const { roomid } = req.body;
+        const { roomid } = req.params;
         
         const ogcode = await User.fetchcode(roomid);
         

@@ -28,6 +28,7 @@ const App = () => {
   const [username, setUsername] = useState(savedUsername || '');
   const [roomid, setRoomId] = useState(savedRoomId || '');
   const [activeTab, setActiveTab] = useState('ExpenditureSplit');
+  const [roomcode, setRoomCode] = useState([]);
 
   useEffect(() => {
     localStorage.setItem('isLoggedIn', isLoggedIn);
@@ -45,6 +46,23 @@ const App = () => {
     setRoomId('');
     localStorage.clear();
   };
+
+  const fetchRoomCode = async (values) => {
+    
+    try {
+        const response = await fetch(`$http://localhost:3000/authfetchcode/${roomid}`, {
+          method: 'GET',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+      });
+        if (!response.ok) throw new Error('Failed to fetch code');
+        const data = await response.json();
+        setRoomCode(data);
+    } catch (error) {
+        message.error('Failed to fetch chores');
+    }
+};
 
   const handleUserDelete = async (values) => {
     try {
