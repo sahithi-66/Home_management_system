@@ -6,7 +6,7 @@ class DailySchedule {
         const schedules = [];
         const assigneeCount = assignees.length;
         for (let i = 0; i < 730; i++) { // 2 years
-            //const scheduledDate = new Date(start_date);
+            const scheduledDate = new Date(start_date);
             scheduledDate.setUTCDate(start_date.getUTCDate() + i);
             schedules.push({
                 newChoreId,

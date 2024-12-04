@@ -11,20 +11,21 @@ import {
     Modal,
     message,
     Typography,
-    DatePicker
+    DatePicker,
+    Switch
 } from 'antd';
 import {
     PlusOutlined,
     ReloadOutlined,
     DeleteOutlined,
-    ScheduleOutlined
+    ScheduleOutlined,
+    SwapOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import './ChoresManagement.css';
 
 const { Title } = Typography;
 const { Option } = Select;
-const { TextArea } = Input;
 
 const ChoresManagement = () => {
     const [form] = Form.useForm();
@@ -34,6 +35,8 @@ const ChoresManagement = () => {
     const [scheduleModalVisible, setScheduleModalVisible] = useState(false);
     const [selectedChore, setSelectedChore] = useState(null);
     const [schedule, setSchedule] = useState([]);
+    const [swapMode, setSwapMode] = useState(false);
+    const [selectedSchedules, setSelectedSchedules] = useState([]);
 
     const API_URL = 'http://localhost:3000/api';
 
@@ -45,9 +48,9 @@ const ChoresManagement = () => {
     const fetchRoommates = async () => {
         try {
             const response = await fetch(`${API_URL}/auth`);
-            console.log(response);
             if (!response.ok) throw new Error('Failed to fetch users');
             const data = await response.json();
+            console.log('Fetched roommates:', data);
             setRoommates(data);
         } catch (error) {
             message.error('Failed to fetch users');
@@ -76,22 +79,21 @@ const ChoresManagement = () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    
-                        choreName: values.title,
-                        assignees: values.assignees,
-                        frequency: values.frequency,
-                        start_date: values.due_date.format('YYYY-MM-DD'),
-                    
+                    choreName: values.title,
+                    assignees: values.assignees,
+                    frequency: values.frequency,
+                    start_date: values.due_date.format('YYYY-MM-DD')
                 }),
             });
 
-            if (!response.ok) throw new Error('Failed to create chore');
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Failed to create chore');
             
             message.success('Chore created successfully');
             form.resetFields();
             fetchChores();
         } catch (error) {
-            message.error('Failed to create chore');
+            message.error(error.message || 'Failed to create chore');
         }
     };
 
@@ -123,18 +125,32 @@ const ChoresManagement = () => {
         }
     };
 
-    const rotateAssignment = async (id) => {
+    const handleSwapSchedules = async () => {
+        if (selectedSchedules.length !== 2) {
+            message.error('Please select exactly two schedules to swap');
+            return;
+        }
+
         try {
-            const response = await fetch(`${API_URL}/chores/${id}/rotate`, {
-                method: 'POST'
+            const response = await fetch(`${API_URL}/chores/swapSchedules`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    firstScheduleId: selectedSchedules[0],
+                    secondScheduleId: selectedSchedules[1]
+                }),
             });
+
+            if (!response.ok) throw new Error('Failed to swap schedules');
             
-            if (!response.ok) throw new Error('Failed to rotate assignment');
-            
-            message.success('Assignment rotated successfully');
-            fetchChores();
+            message.success('Schedules swapped successfully');
+            showSchedule(selectedChore);
+            setSwapMode(false);
+            setSelectedSchedules([]);
         } catch (error) {
-            message.error('Failed to rotate assignment');
+            message.error('Failed to swap schedules');
         }
     };
 
@@ -143,30 +159,42 @@ const ChoresManagement = () => {
             title: 'Title',
             dataIndex: 'choreName',
             key: 'choreName',
+            sorter: (a, b) => a.choreName.localeCompare(b.choreName),
         },
-        
         {
             title: 'Assigned To',
-            dataIndex: 'assignedTo',
-            key: 'assignedTo',
-            render: (_, record) => {
-                // Convert IDs to names
-                const assigneeNames = JSON.parse(record.roommates || "[]")
-                    .map((id) => {
-                        const roommate = roommates.find((r) => r.id === id);
-                        return roommate ? roommate.name : `Unknown (ID: ${id})`;
-                    })
-                    .join(", ");
-                return assigneeNames ? <Tag color="blue">{assigneeNames}</Tag> : <Tag color="red">Unassigned</Tag>;
-            },
+            dataIndex: 'roommates',
+            key: 'roommates',
+            render: (roommateIds, record) => {
+                try {
+                    // Parse the roommate IDs if it's a string
+                    const assigneeList = Array.isArray(roommateIds) ? roommateIds : JSON.parse(roommateIds);
+                    
+                    return (
+                        <Space wrap>
+                            {assigneeList.map((assigneeId) => {
+                                // Use the roommates state to find the user
+                                const roommate = roommates.find(r => r.id === Number(assigneeId));
+                                return (
+                                    <Tag key={assigneeId} color="blue">
+                                        {roommate ? roommate.name : `User ${assigneeId}`}
+                                    </Tag>
+                                );
+                            })}
+                        </Space>
+                    );
+                } catch (error) {
+                    console.error('Error parsing roommates:', error, roommateIds);
+                    return <Tag color="red">Invalid Assignment</Tag>;
+                }
+            }
         },
         {
             title: 'Frequency',
             dataIndex: 'scheduleType',
             key: 'scheduleType',
-            
+            render: (type) => <Tag color="purple">{type}</Tag>
         },
-        
         {
             title: 'Actions',
             key: 'actions',
@@ -177,12 +205,6 @@ const ChoresManagement = () => {
                         icon={<ScheduleOutlined />}
                         onClick={() => showSchedule(record)}
                         title="View Schedule"
-                    />
-                    <Button
-                        type="text"
-                        icon={<ReloadOutlined />}
-                        onClick={() => rotateAssignment(record.id)}
-                        title="Rotate Assignment"
                     />
                     <Button
                         type="text"
@@ -201,16 +223,15 @@ const ChoresManagement = () => {
             title: 'Date',
             dataIndex: 'scheduled_date',
             key: 'scheduled_date',
-            render: (date) => dayjs(date).format('YYYY-MM-DD') // Format the date
+            render: (date) => dayjs(date).format('YYYY-MM-DD')
         },
         {
             title: 'Assigned To',
             dataIndex: 'assigned_to',
             key: 'assigned_to',
-            render: (assigneeId) => {
-                // Find the name corresponding to the assignee ID
-                const roommate = roommates.find((r) => r.id.toString() === assigneeId);
-                return roommate ? <Tag color="blue">{roommate.name}</Tag> : <Tag color="red">Unknown</Tag>;
+            render: (assignedTo) => {
+                const roommate = roommates.find(r => r.id === Number(assignedTo));
+                return <Tag color="blue">{roommate ? roommate.name : 'Unknown User'}</Tag>;
             }
         }
     ];
@@ -233,22 +254,27 @@ const ChoresManagement = () => {
                     </Form.Item>
 
                     <Form.Item
-                        name="assignees"
-                        label="Assignees"
-                        rules={[{ required: true, message: 'Please select assignees' }]}
-                    >
-                        <Select
-                            mode="multiple"
-                            placeholder="Select assignees"
-                            style={{ width: '100%' }}
-                        >
-                            {roommates.map(roommate => (
-                                <Option key={roommate.id} value={roommate.id}>
-                                    {roommate.name}
-                                </Option>
-                            ))}
-                        </Select>
-                    </Form.Item>
+    name="assignees"
+    label="Assignees"
+    rules={[{ required: true, message: 'Please select assignees' }]}
+>
+    <Select
+        mode="multiple"
+        placeholder="Select assignees"
+        style={{ width: '100%' }}
+        optionLabelProp="label"
+    >
+        {roommates.map(roommate => (
+            <Option 
+                key={roommate.id} 
+                value={roommate.id} 
+                label={roommate.name}
+            >
+                {roommate.name}
+            </Option>
+        ))}
+    </Select>
+</Form.Item>
 
                     <Form.Item
                         name="frequency"
@@ -278,7 +304,10 @@ const ChoresManagement = () => {
                 </Form>
             </Card>
 
-            <Card title="Chore List" className="chores-list-card">
+            <Card 
+                title={<Title level={3}>Chore List</Title>} 
+                className="chores-list-card"
+            >
                 <Table
                     columns={columns}
                     dataSource={chores}
@@ -288,17 +317,58 @@ const ChoresManagement = () => {
             </Card>
 
             <Modal
-                title={`Schedule for ${selectedChore?.choreName}`}
+                title={
+                    <Space>
+                        <span>Schedule for {selectedChore?.choreName}</span>
+                        {swapMode && (
+                            <Tag color="orange">
+                                Select two schedules to swap
+                            </Tag>
+                        )}
+                    </Space>
+                }
                 open={scheduleModalVisible}
-                onCancel={() => setScheduleModalVisible(false)}
-                footer={null}
+                onCancel={() => {
+                    setScheduleModalVisible(false);
+                    setSwapMode(false);
+                    setSelectedSchedules([]);
+                }}
+                footer={[
+                    <Button 
+                        key="swap" 
+                        icon={<SwapOutlined />}
+                        onClick={() => setSwapMode(!swapMode)}
+                    >
+                        {swapMode ? 'Cancel Swap' : 'Swap Schedules'}
+                    </Button>,
+                    swapMode && selectedSchedules.length === 2 && (
+                        <Button 
+                            key="confirm" 
+                            type="primary"
+                            onClick={handleSwapSchedules}
+                        >
+                            Confirm Swap
+                        </Button>
+                    )
+                ]}
                 width={600}
             >
                 <Table
                     dataSource={schedule}
                     columns={scheduleColumns}
-                    rowKey="date"
+                    rowKey="id"
                     pagination={false}
+                    rowSelection={swapMode ? {
+                        type: 'checkbox',
+                        selectedRowKeys: selectedSchedules,
+                        onChange: (selectedRowKeys) => {
+                            if (selectedRowKeys.length > 2) {
+                                message.warning('You can only select two schedules to swap');
+                                return;
+                            }
+                            setSelectedSchedules(selectedRowKeys);
+                        },
+                    } : undefined}
                 />
             </Modal>
         </div>

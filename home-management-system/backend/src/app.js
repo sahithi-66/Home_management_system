@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-// import expenseRoutes from './routes/expense.routes.js';
+import expenseRoutes from './routes/expense.routes.js';
 import noticeRoutes from './routes/notice.routes.js';
 import choreRoutes from './routes/chore.routes.js';
 import groceryRoutes from './routes/grocery.routes.js';
@@ -15,7 +15,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-// app.use('/api/expenses', expenseRoutes);
+app.use('/api/expenses', expenseRoutes);
 app.use('/api/notices', noticeRoutes);
 app.use('/api/chores', choreRoutes);
 app.use('/api/groceries', groceryRoutes);
