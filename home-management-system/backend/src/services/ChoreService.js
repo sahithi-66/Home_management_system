@@ -24,7 +24,7 @@ class WeeklySchedule {
     static generate(newChoreId, choreName, assignees, start_date) {
         const schedules = [];
         const assigneeCount = assignees.length;
-        console.log(start_date);
+        // console.log(start_date);
         for (let i = 0; i < 104; i++) { // 2 years
             
             const scheduledDate = new Date(start_date);
@@ -34,7 +34,7 @@ class WeeklySchedule {
             // Add days (treating the date as local)
             //console.log(`with get date: ${scheduledDate.getDate()}`);
             scheduledDate.setUTCDate(scheduledDate.getUTCDate() + i * 7); // Add weeks
-            console.log(`${i} weekly: ${scheduledDate.toISOString()}`);
+            //console.log(`${i} weekly: ${scheduledDate.toISOString()}`);
 
             schedules.push({
                 newChoreId,
@@ -43,9 +43,7 @@ class WeeklySchedule {
                 scheduledDate,
                 completed: false,
             });
-            if(i==1){
-                console.log(schedules);
-            }
+            
             
         }
         return schedules;
@@ -171,13 +169,11 @@ class ChoreService {
             schedules = [];  // Default to empty array
             console.log('empty array');
         }
-        let i=0;
+
         schedules.forEach(schedule => {
-            if(i==0) console.log(schedule);
-            i=1;
             // Handle each schedule (insert into DB, etc.)
             Chore.addSchedule(schedule);
-            //console.log('Saving schedule:', schedule);
+
         });
     }
 
