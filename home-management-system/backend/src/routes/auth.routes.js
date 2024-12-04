@@ -8,11 +8,8 @@ router.post('/login', AuthController.login);
 
 router.get('/fetchcode/:roomid', async (req, res, next) => {
     try {
-        //console.log("room registration started");
         const { roomid } = req.params;
-        
         const ogcode = await User.fetchcode(roomid);
-        
         res.status(200).json(ogcode.roomcode);
     } catch (error) {
         next(error);
