@@ -234,13 +234,13 @@ const handleDeleteRoommate = async () => {
           </Button>,
         ]}
       >
-        <Button
+        {/* <Button
           type="primary"
           icon={<DeleteOutlined />}
           onClick={() => setDeleteMode(!deleteMode)}
         >
           {deleteMode ? 'Cancel Delete' : 'Delete Users'}
-        </Button>
+        </Button> */}
         <List
           dataSource={roommates}
           renderItem={(roommate) => (
@@ -258,7 +258,6 @@ const handleDeleteRoommate = async () => {
               <List.Item.Meta
                 avatar={<Avatar icon={<UserOutlined />} />}
                 title={roommate.name}
-                description={roommate.email || 'No email available'}
               />
             </List.Item>
           )}

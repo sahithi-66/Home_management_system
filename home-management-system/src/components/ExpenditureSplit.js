@@ -71,6 +71,7 @@ const ExpenditureSplit = ({ splits: initialSplits = [], roomid }) => {
             const value = n % 100;
             return suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0];
         };
+        console.log("Final Date", `${day}${ordinal(day)} ${month} ${year}`)
         return `${day}${ordinal(day)} ${month} ${year}`;
     };
 
@@ -221,6 +222,7 @@ const handleChange = (field, value) => {
                             return [...prevClearedSplits, clearedSplit];
                         }
                     });
+                    fetchClearedSplits();
                 } else {
                     message.error(data.message || "Failed to clear split");
                 }
@@ -287,6 +289,7 @@ const handleChange = (field, value) => {
             
             await fetchSplits();
             setExpenses(prev => [...prev, { ...data.expense, splits }]);
+            await fetchExpenses();
             form.resetFields();
             setExpenseName('');
             setAmount('');
@@ -539,179 +542,198 @@ const handleChange = (field, value) => {
                     </Card>
                 )}
 
-                {showClearedSplits && (
-                    <Card title={<Title level={4}>Payment Summary</Title>}>
-                        <div className="recorded-payments">
-                            {clearedSplits.length > 0 ? (
-                                clearedSplits.map((clearedSplit, index) => (
-                                    <Card key={index} className="split-item">
-                                        <Space>
-                                            <CheckCircleOutlined style={{ color: '#52c41a' }} />
-                                            <Tag className="date-box">{formatDate(clearedSplit.cleared_at)}</Tag>
-                                            <span>{clearedSplit.debtor} Paid</span>
-                                            <Tag color="blue">${parseFloat(clearedSplit.amount).toFixed(2)}</Tag>
-                                            <span>to {clearedSplit.creditor}</span>
-                                        </Space>
-                                    </Card>
-                                ))
-                            ) : (
-                                <Empty description="No Payments are recorded yet!" />
-                            )}
-                        </div>
+{showClearedSplits && (
+    <Card 
+        title={<Title level={4}>Payment Summary</Title>}
+        bodyStyle={{ padding: 0, maxHeight: '500px', overflow: 'auto' }}
+    >
+        <div className="recorded-payments" style={{ padding: '16px' }}>
+            {clearedSplits.length > 0 ? (
+                clearedSplits.map((clearedSplit, index) => (
+                    <Card 
+                        key={index} 
+                        className="split-item"
+                        style={{ marginBottom: 16 }}
+                    >
+                        <Space size="middle" align="center">
+                            <CheckCircleOutlined style={{ color: '#52c41a', fontSize: '16px' }} />
+                            <Tag className="date-box">
+                                {formatDate(clearedSplit.cleared_at)}
+                            </Tag>
+                            <span>{clearedSplit.debtor} Paid</span>
+                            <Tag color="blue">
+                                ${parseFloat(clearedSplit.amount).toFixed(2)}
+                            </Tag>
+                            <span>to {clearedSplit.creditor}</span>
+                        </Space>
                     </Card>
-                )}
+                ))
+            ) : (
+                <Empty 
+                    description="No Payments are recorded yet!" 
+                    style={{ margin: '24px 0' }}
+                />
+            )}
+        </div>
+    </Card>
+)}
 
-                {showExpenses && (
-                    <Card title={<Title level={4}>Expenses</Title>}>
-                        {loading ? (
-                            <div style={{ textAlign: 'center', padding: '20px' }}>
-                                <Spin size="large" />
-                            </div>
-                        ) : expenses.length === 0 ? (
-                            <Empty description="No expenses yet!" />
-                        ) : (
-                            expenses.reverse().map((expense) => (
-                                <Card 
-                                    key={expense.id} 
-                                    className="expense-card"
-                                    style={{ marginBottom: 16 }}
-                                >
-                                    {editMode === expense.id ? (
-                                        <div className="edit-mode">
-                                            <Form layout="vertical">
-                                                <Row gutter={16}>
-                                                    <Col span={12}>
-                                                        <Form.Item label="Description">
-                                                            <Input
-                                                                value={editedExpense.description}
-                                                                onChange={(e) => handleChange('description', e.target.value)}
-                                                            />
-                                                        </Form.Item>
-                                                    </Col>
-                                                    <Col span={12}>
-                                                        <Form.Item label="Amount">
-                                                            <InputNumber
-                                                                style={{ width: '100%' }}
-                                                                value={editedExpense.amount}
-                                                                onChange={(value) => handleChange('amount', value)}
-                                                            />
-                                                        </Form.Item>
-                                                    </Col>
-                                                </Row>
-
-                                                <Form.Item label="Paid By">
-                                                    <Select
-                                                        value={payerId}
-                                                        onChange={(value) => setPayerId(value)}
-                                                    >
-                                                        {participants.map((participant) => (
-                                                            <Option key={participant.id} value={participant.id}>
-                                                                {participant.name}
-                                                            </Option>
-                                                        ))}
-                                                    </Select>
-                                                </Form.Item>
-
-                                                <Form.Item label="Category">
-                                                    <Select
-                                                        value={category}
-                                                        onChange={(value) => setCategory(value)}
-                                                    >
-                                                        {categories.map((cat) => (
-                                                            <Option key={cat} value={cat}>{cat}</Option>
-                                                        ))}
-                                                    </Select>
-                                                </Form.Item>
-
-                                                <Table
-                                                    dataSource={editedExpense.splits}
-                                                    columns={[
-                                                        { title: 'User', dataIndex: 'username' },
-                                                        {
-                                                            title: 'Amount',
-                                                            dataIndex: 'contributed_amount',
-                                                            render: (_, record, index) => (
-                                                                <InputNumber
-                                                                    value={record.contributed_amount}
-                                                                    onChange={(value) => 
-                                                                        handleSplitChange(index, 'contributed_amount', value)
-                                                                    }
-                                                                />
-                                                            )
-                                                        }
-                                                    ]}
-                                                    pagination={false}
+{showExpenses && (
+    <Card 
+        title={<Title level={4}>Expenses</Title>}
+        bodyStyle={{ padding: 0, maxHeight: '500px', overflow: 'auto' }}
+    >
+        {loading ? (
+            <div style={{ textAlign: 'center', padding: '20px' }}>
+                <Spin size="large" />
+            </div>
+        ) : expenses.length === 0 ? (
+            <Empty description="No expenses yet!" />
+        ) : (
+            <div style={{ padding: '16px' }}>
+                {expenses.reverse().map((expense) => (
+                    <Card 
+                        key={expense.id} 
+                        className="expense-card"
+                        style={{ marginBottom: 16 }}
+                    >
+                        {editMode === expense.id ? (
+                            <div className="edit-mode">
+                                <Form layout="vertical">
+                                    <Row gutter={16}>
+                                        <Col span={12}>
+                                            <Form.Item label="Description">
+                                                <Input
+                                                    value={editedExpense.description}
+                                                    onChange={(e) => handleChange('description', e.target.value)}
                                                 />
+                                            </Form.Item>
+                                        </Col>
+                                        <Col span={12}>
+                                            <Form.Item label="Amount">
+                                                <InputNumber
+                                                    style={{ width: '100%' }}
+                                                    value={editedExpense.amount}
+                                                    onChange={(value) => handleChange('amount', value)}
+                                                />
+                                            </Form.Item>
+                                        </Col>
+                                    </Row>
 
-                                                {errors[expense.id] && (
-                                                    <Alert 
-                                                        message={errors[expense.id]} 
-                                                        type="error" 
-                                                        showIcon 
-                                                        style={{ marginTop: 16 }} 
+                                    <Form.Item label="Paid By">
+                                        <Select
+                                            value={payerId}
+                                            onChange={(value) => setPayerId(value)}
+                                        >
+                                            {participants.map((participant) => (
+                                                <Option key={participant.id} value={participant.id}>
+                                                    {participant.name}
+                                                </Option>
+                                            ))}
+                                        </Select>
+                                    </Form.Item>
+
+                                    <Form.Item label="Category">
+                                        <Select
+                                            value={category}
+                                            onChange={(value) => setCategory(value)}
+                                        >
+                                            {categories.map((cat) => (
+                                                <Option key={cat} value={cat}>{cat}</Option>
+                                            ))}
+                                        </Select>
+                                    </Form.Item>
+
+                                    <Table
+                                        dataSource={editedExpense.splits}
+                                        columns={[
+                                            { title: 'User', dataIndex: 'username' },
+                                            {
+                                                title: 'Amount',
+                                                dataIndex: 'contributed_amount',
+                                                render: (_, record, index) => (
+                                                    <InputNumber
+                                                        value={record.contributed_amount}
+                                                        onChange={(value) => 
+                                                            handleSplitChange(index, 'contributed_amount', value)
+                                                        }
                                                     />
-                                                )}
+                                                )
+                                            }
+                                        ]}
+                                        pagination={false}
+                                    />
 
-                                                <Space style={{ marginTop: 16 }}>
-                                                    <Button type="primary" onClick={handleSave}>
-                                                        Save
-                                                    </Button>
-                                                    <Button onClick={() => setEditMode(null)}>
-                                                        Cancel
-                                                    </Button>
-                                                </Space>
-                                            </Form>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <div className="expense-header">
-                                                <Space>
-                                                    <DollarOutlined />
-                                                    <span>{expense.description} - Paid by {expense.payer_name}</span>
-                                                </Space>
-                                                <Tag color="blue" className="expense-amount">
-                                                    ${expense.amount}
-                                                </Tag>
-                                            </div>
-                                            <Tag color="purple" style={{ margin: '8px 0' }}>
-                                                {expense.category}
-                                            </Tag>
-                                            <Table
-                                                dataSource={expense.splits}
-                                                columns={[
-                                                    { title: 'User', dataIndex: 'username' },
-                                                    { 
-                                                        title: 'Amount', 
-                                                        dataIndex: 'contributed_amount',
-                                                        render: (amount) => `$${amount}`
-                                                    }
-                                                ]}
-                                                pagination={false}
-                                            />
-                                            <div className="expense-actions" style={{ marginTop: 16 }}>
-                                                <Button
-                                                    type="primary"
-                                                    danger
-                                                    icon={<DeleteOutlined />}
-                                                    onClick={() => handleDeleteExpense(expense.id)}
-                                                >
-                                                    Delete
-                                                </Button>
-                                                <Button
-                                                    type="primary"
-                                                    icon={<EditOutlined />}
-                                                    onClick={() => handleEditClick(expense)}
-                                                >
-                                                    Update
-                                                </Button>
-                                            </div>
-                                        </>
+                                    {errors[expense.id] && (
+                                        <Alert 
+                                            message={errors[expense.id]} 
+                                            type="error" 
+                                            showIcon 
+                                            style={{ marginTop: 16 }} 
+                                        />
                                     )}
-                                </Card>
-                            ))
+
+                                    <Space style={{ marginTop: 16 }}>
+                                        <Button type="primary" onClick={handleSave}>
+                                            Save
+                                        </Button>
+                                        <Button onClick={() => setEditMode(null)}>
+                                            Cancel
+                                        </Button>
+                                    </Space>
+                                </Form>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="expense-header">
+                                    <Space>
+                                        <DollarOutlined />
+                                        <span>{expense.description} - Paid by {expense.payer_name}</span>
+                                    </Space>
+                                    <Tag color="blue" className="expense-amount">
+                                        ${expense.amount}
+                                    </Tag>
+                                </div>
+                                <Tag color="purple" style={{ margin: '8px 0' }}>
+                                    {expense.category}
+                                </Tag>
+                                <Table
+                                    dataSource={expense.splits}
+                                    columns={[
+                                        { title: 'User', dataIndex: 'username' },
+                                        { 
+                                            title: 'Amount', 
+                                            dataIndex: 'contributed_amount',
+                                            render: (amount) => `$${amount}`
+                                        }
+                                    ]}
+                                    pagination={false}
+                                />
+                                <div className="expense-actions" style={{ marginTop: 16 }}>
+                                    <Button
+                                        type="primary"
+                                        danger
+                                        icon={<DeleteOutlined />}
+                                        onClick={() => handleDeleteExpense(expense.id)}
+                                    >
+                                        Delete
+                                    </Button>
+                                    <Button
+                                        type="primary"
+                                        icon={<EditOutlined />}
+                                        onClick={() => handleEditClick(expense)}
+                                    >
+                                        Update
+                                    </Button>
+                                </div>
+                            </>
                         )}
                     </Card>
-                )}
+                ))}
+            </div>
+        )}
+    </Card>
+)}
             </Space>
 
             <Modal
