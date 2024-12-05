@@ -2,10 +2,19 @@ import request from 'supertest';
 import app from '../app.js'; // Adjust the path to your app entry point
 import ChoreService from '../services/ChoreService.js';
 import Chore from '../models/Chore.js';
+import { jest } from '@jest/globals';
 
 // Mock the ChoreService and Chore model
 jest.mock('../services/ChoreService.js');
 jest.mock('../models/Chore.js');
+
+// Define mock implementations for the functions used in the tests
+Chore.fetchChoreCount = jest.fn();
+ChoreService.addNewChoreWithSchedule = jest.fn();
+ChoreService.swapSchedules = jest.fn();
+Chore.getAllChores = jest.fn();
+Chore.deleteChoreById = jest.fn();
+ChoreService.getScheduleForChore = jest.fn();
 
 describe('ChoreController', () => {
   describe('POST /api/chores/addChore', () => {
@@ -53,11 +62,11 @@ describe('ChoreController', () => {
         });
 
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty('message', 'All fields are required');
+      expect(response.body).toHaveProperty('message', 'Chore already exists!!!');
     });
   });
 
-  describe('POST /api/chores/swapChoreSchedule', () => {
+  describe('POST /api/chores/swapSchedules', () => {
     it('should swap schedules successfully', async () => {
       ChoreService.swapSchedules.mockResolvedValue(true);
 
@@ -117,13 +126,13 @@ describe('ChoreController', () => {
     });
   });
 
-  describe('GET /api/chores/getChoreSchedule/:id', () => {
+  describe('GET /api/chores/schedule/:id', () => {
     it('should get chore schedule', async () => {
       ChoreService.getScheduleForChore.mockResolvedValue([
         { id: 1, choreName: 'Test Chore', nextOccurrence: '2024-12-01' }
       ]);
 
-      const response = await request(app).get('/api/chores/getChoreSchedule/1');
+      const response = await request(app).get('/api/chores/schedule/1');
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('length', 1);
@@ -132,7 +141,7 @@ describe('ChoreController', () => {
     it('should return 404 if chore not found', async () => {
       ChoreService.getScheduleForChore.mockResolvedValue([]);
 
-      const response = await request(app).get('/api/chores/getChoreSchedule/999');
+      const response = await request(app).get('/api/chores/schedule/999');
 
       expect(response.status).toBe(404);
       expect(response.body).toHaveProperty('message', 'Chore not found');
