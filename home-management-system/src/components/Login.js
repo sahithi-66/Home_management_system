@@ -76,6 +76,7 @@ const Login = ({ onLoginSuccess, setUsername, setRoomId, onSignup }) => {
                 message.success('Room creation successful!');
                 setIsCreateRoomVisible(false); // Close the modal on success
             }
+            if (!response.ok) throw new Error(response.message);
         } catch (error) {
             console.error('Room creation failed:', error);
             message.error(error.message || 'Failed to create room');
@@ -97,11 +98,13 @@ const Login = ({ onLoginSuccess, setUsername, setRoomId, onSignup }) => {
                 }),
             });
 
+            console.log("Response", response)
             if (response.ok) {
                 const data = await response.json();
                 message.success('User creation successful!');
                 setIsJoinRoomVisible(false); // Close the modal on success
             }
+            if (!response.ok) throw new Error(response.message);
         } catch (error) {
             console.error('User creation failed:', error);
             message.error(error.message || 'Failed to create user');
