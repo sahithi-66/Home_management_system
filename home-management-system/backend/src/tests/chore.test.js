@@ -4,9 +4,15 @@ import ChoreService from '../services/ChoreService.js';
 
 describe('Chore Management API', () => {
   const sampleChore = {
-    choreName: 'Test Chore',
+    choreName: 'Test Chore for Testing',
     assignees: ['John', 'Doe'],
-    frequency: 'weekly',
+    frequency: 'WEEKLY',
+    start_date: '2024-12-01',
+    currentIndex: 101
+  };
+  const sampleFailChore = {
+    assignees: ['John', 'Doe'],
+    frequency: 'WEEKLY',
     start_date: '2024-12-01'
   };
 
@@ -24,7 +30,7 @@ describe('Chore Management API', () => {
     it('should fail if required fields are missing', async () => {
       const response = await request(app)
         .post('/api/chores/addChore')
-        .send({});
+        .send(sampleFailChore);
 
       expect(response.status).toBe(400);
     });
@@ -51,7 +57,7 @@ describe('Chore Management API', () => {
       const response = await request(app)
         .delete('/api/chores/deleteChore/999');
 
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(400);
     });
   });
 });

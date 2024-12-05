@@ -1,5 +1,14 @@
-module.exports = {
+export default {
+  transform: {},
   testEnvironment: 'node',
-  coveragePathIgnorePatterns: ['/node_modules/'],
-  verbose: true
+  collectCoverageFrom: [
+    'src/**/*.js',
+    '!src/tests/**',
+    '!**/node_modules/**',
+  ],
+  coverageDirectory: 'coverage',
+  verbose: true,
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1'
+  }
 };
