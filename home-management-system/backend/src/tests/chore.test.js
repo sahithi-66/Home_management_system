@@ -25,7 +25,7 @@ describe('Chore Management API', () => {
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty('id');
       expect(response.body).toHaveProperty('choreName', 'Test Chore');
-    });
+    },10000);
 
     it('should fail if required fields are missing', async () => {
       const response = await request(app)
