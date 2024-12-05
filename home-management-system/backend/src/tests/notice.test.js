@@ -1,6 +1,7 @@
 
 import request from 'supertest';
 import app from '../app.js';
+import { jest } from '@jest/globals';
 import NoticeService from '../services/NoticeService.js';
 
 describe('Notice Board API', () => {
