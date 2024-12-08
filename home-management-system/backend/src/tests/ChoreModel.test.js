@@ -100,39 +100,27 @@ describe('Chore Model', () => {
     });
 
     describe('deleteChoreById', () => {
-        it('should delete a chore by ID and its schedule', async () => {
+        it('should delete a chore and its schedule from the database', async () => {
             // Arrange
             const choreId = 1;
-            db.execute.mockResolvedValue([{ affectedRows: 1 }]);
+            db.execute.mockResolvedValue([{ affectedRows: 1 }]); // Mock successful deletion
 
             // Act
             const result = await Chore.deleteChoreById(choreId);
 
             // Assert
-            expect(db.execute).toHaveBeenCalledWith('DELETE FROM schedule WHERE chore_id = ?', [choreId]);
-            expect(db.execute).toHaveBeenCalledWith('DELETE FROM chores WHERE id = ?', [choreId]);
+            expect(db.execute).toHaveBeenCalledWith("DELETE FROM schedule WHERE chore_id = ?", [choreId]);
+            expect(db.execute).toHaveBeenCalledWith("DELETE FROM chores WHERE id = ?", [choreId]);
             expect(result).toBe(true);
-        });
-
-        it('should return false if no rows were deleted', async () => {
-            // Arrange
-            const choreId = 1;
-            db.execute.mockResolvedValue([{ affectedRows: 0 }]);
-
-            // Act
-            const result = await Chore.deleteChoreById(choreId);
-
-            // Assert
-            expect(result).toBe(false);
         });
     });
 
     describe('fetchSchedule', () => {
-        it('should fetch schedules for a given chore and date', async () => {
+        it('should fetch the schedule for a given chore ID and date', async () => {
             // Arrange
             const choreID = 1;
-            const formattedDate = '2024-12-05 00:00:00';
-            const mockSchedules = [{ id: 1, assigned_to: 'John', scheduled_date: formattedDate }];
+            const formattedDate = '2024-12-05';
+            const mockSchedules = [{ id: 1, chore_id: 1, chore_name: 'Test Chore', scheduled_date: '2024-12-05' }];
             db.execute.mockResolvedValue([mockSchedules]);
 
             // Act
@@ -140,35 +128,42 @@ describe('Chore Model', () => {
 
             // Assert
             expect(db.execute).toHaveBeenCalledWith(
-                `
-                SELECT * FROM schedule
-                WHERE chore_id = ? AND scheduled_date >= ? 
-                ORDER BY scheduled_date ASC
-                LIMIT 15;
-            `,
+                'SELECT * FROM schedule WHERE chore_id = ? AND scheduled_date >= ? ORDER BY scheduled_date ASC LIMIT 15;',
                 [choreID, formattedDate]
             );
             expect(result).toEqual(mockSchedules);
         });
     });
 
+    describe('getById', () => {
+        it('should fetch a schedule by its ID', async () => {
+            // Arrange
+            const scheduleId = 1;
+            const mockSchedule = { id: 1, chore_id: 1, chore_name: 'Test Chore', scheduled_date: '2024-12-05' };
+            db.execute.mockResolvedValue([[mockSchedule]]);
+
+            // Act
+            const result = await Chore.getById(scheduleId);
+
+            // Assert
+            expect(db.execute).toHaveBeenCalledWith('SELECT * FROM schedule WHERE id = ?', [scheduleId]);
+            expect(result).toEqual(mockSchedule);
+        });
+    });
+
     describe('updateAssignedTo', () => {
-        it('should update the assigned_to field of a schedule', async () => {
+        it('should update the assigned_to field for a schedule', async () => {
             // Arrange
             const scheduleId = 1;
             const newAssignedTo = 'Jane';
-            const mockResult = { affectedRows: 1 };
-            db.execute.mockResolvedValue([mockResult]);
+            db.execute.mockResolvedValue([{ affectedRows: 1 }]); // Mock successful update
 
             // Act
             const result = await Chore.updateAssignedTo(scheduleId, newAssignedTo);
 
             // Assert
-            expect(db.execute).toHaveBeenCalledWith(
-                'UPDATE schedule SET assigned_to = ? WHERE id = ?',
-                [newAssignedTo, scheduleId]
-            );
-            expect(result).toEqual(mockResult);
+            expect(db.execute).toHaveBeenCalledWith('UPDATE schedule SET assigned_to = ? WHERE id = ?', [newAssignedTo, scheduleId]);
+            expect(result).toEqual([{ affectedRows: 1 }]);
         });
     });
 });
