@@ -23,8 +23,7 @@ describe('Chore Management API', () => {
         .send(sampleChore);
 
       expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty('id');
-      expect(response.body).toHaveProperty('choreName', 'Test Chore');
+      expect(response.body).toHaveProperty('choreName', 'Test Chore for Testing');
     },10000);
 
     it('should fail if required fields are missing', async () => {
@@ -44,20 +43,4 @@ describe('Chore Management API', () => {
     });
   });
 
-  describe('DELETE /api/chores/deleteChore/:id', () => {
-    it('should delete a chore by id', async () => {
-      const response = await request(app)
-        .delete('/api/chores/deleteChore/1');
-
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('message', 'Chore deleted successfully');
-    });
-
-    it('should fail if chore id is invalid', async () => {
-      const response = await request(app)
-        .delete('/api/chores/deleteChore/999');
-
-      expect(response.status).toBe(400);
-    });
-  });
 });

@@ -3,15 +3,17 @@ import express from 'express';
 import GroceryController from '../controllers/GroceryController.js';
 import GroceryService from '../services/GroceryService.js';
 
+// Initialize Express app and use the GroceryController router
 const app = express();
 app.use(express.json());
 app.use('/grocery', GroceryController);
 
+// Mock the GroceryService
 jest.mock('../services/GroceryService.js');
 
 describe('GroceryController', () => {
     afterEach(() => {
-        jest.clearAllMocks();
+        jest.clearAllMocks(); // Clear mock calls and instances
     });
 
     it('should create an item successfully', async () => {
@@ -22,7 +24,10 @@ describe('GroceryController', () => {
             .send({ name: 'Milk', quantity: 2 });
 
         expect(response.status).toBe(201);
-        expect(response.body).toEqual({ id: 1, message: 'Item created successfully' });
+        expect(response.body).toEqual({
+            id: 1,
+            message: 'Item created successfully',
+        });
     });
 
     it('should get all items', async () => {
@@ -35,7 +40,7 @@ describe('GroceryController', () => {
         expect(response.body).toEqual(items);
     });
 
-    it('should get item by id', async () => {
+    it('should get an item by id', async () => {
         const item = { id: 1, name: 'Milk', quantity: 2 };
         GroceryService.getItemById.mockResolvedValue(item);
 
@@ -54,7 +59,10 @@ describe('GroceryController', () => {
             .send({ name: 'Milk', quantity: 5 });
 
         expect(response.status).toBe(200);
-        expect(response.body).toEqual({ item, message: 'Item updated successfully' });
+        expect(response.body).toEqual({
+            item,
+            message: 'Item updated successfully',
+        });
     });
 
     it('should delete an item successfully', async () => {
@@ -63,7 +71,9 @@ describe('GroceryController', () => {
         const response = await request(app).delete('/grocery/1');
 
         expect(response.status).toBe(200);
-        expect(response.body).toEqual({ message: 'Item deleted successfully' });
+        expect(response.body).toEqual({
+            message: 'Item deleted successfully',
+        });
     });
 
     it('should update quantity successfully', async () => {
@@ -74,7 +84,9 @@ describe('GroceryController', () => {
             .send({ quantity: 10 });
 
         expect(response.status).toBe(200);
-        expect(response.body).toEqual({ message: 'Quantity updated successfully' });
+        expect(response.body).toEqual({
+            message: 'Quantity updated successfully',
+        });
     });
 
     it('should get purchase history', async () => {
@@ -105,5 +117,18 @@ describe('GroceryController', () => {
 
         expect(response.status).toBe(200);
         expect(response.body).toEqual(items);
+    });
+
+    it('should handle errors gracefully', async () => {
+        GroceryService.createItem.mockRejectedValue(new Error('Failed to create item'));
+
+        const response = await request(app)
+            .post('/grocery')
+            .send({ name: 'Milk', quantity: 2 });
+
+        expect(response.status).toBe(500);
+        expect(response.body).toEqual({
+            error: 'Failed to create item',
+        });
     });
 });

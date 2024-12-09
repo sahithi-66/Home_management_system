@@ -1,14 +1,30 @@
 export default {
-  transform: {},
   testEnvironment: 'node',
-  collectCoverageFrom: [
-    'src/**/*.js',
-    '!src/tests/**',
-    '!**/node_modules/**',
+  transform: {},
+  testMatch: [
+    '**/tests/**/*.test.js',
+    '**/tests/**/*.spec.js'
   ],
-  coverageDirectory: 'coverage',
-  verbose: true,
   moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1'
-  }
+    '^@/(.*)$': '<rootDir>/src/$1'
+  },
+  setupFilesAfterEnv: ['<rootDir>/src/tests/setupTests.js'],
+  verbose: true,
+  collectCoverage: true,
+  coverageDirectory: 'coverage',
+  moduleDirectories: ['node_modules', 'src'],
+  roots: ['<rootDir>/src'],
+  testPathIgnorePatterns: ['/node_modules/'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(module-that-needs-to-be-transformed)/)'
+  ],
+  coveragePathIgnorePatterns: [
+    'node_modules',
+    // 'src/models/Notice.js',
+    // 'src/controllers/UserController.js',
+    // 'src/controllers/GroceryController.js',
+    // 'src/services',
+    // 'src/routes/auth.routes.js'
+    
+  ]
 };

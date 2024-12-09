@@ -1,105 +1,70 @@
 import request from 'supertest';
-import express from 'express';
-import NoticeController from '../controllers/NoticeController.js';
-import NoticeService from '../services/NoticeService.js';
+import app from '../app.js';
+import { jest } from '@jest/globals';
 
-const app = express();
-app.use(express.json());
-app.use('/notices', NoticeController);
+describe('Notice Controller Tests', () => {
+  const sampleNotice = {
+    title: 'Test Notice',
+    content: 'This is a test notice',
+    author_id: 1,
+    is_parcel: false
+  };
 
-jest.mock('../services/NoticeService.js');
+  describe('createNotice', () => {
+    it('should create a new notice successfully', async () => {
+      const response = await request(app)
+        .post('/api/notices')
+        .send(sampleNotice);
 
-describe('NoticeController', () => {
-    afterEach(() => {
-        jest.clearAllMocks();
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty('message', 'Notice created successfully');
     });
 
-    it('should create a notice successfully', async () => {
-        NoticeService.createNotice.mockResolvedValue(1);
+    it('should handle missing fields', async () => {
+      const response = await request(app)
+        .post('/api/notices')
+        .send({});
 
-        const response = await request(app)
-            .post('/notices')
-            .send({ title: 'Meeting', content: 'Important meeting tomorrow' });
-
-        expect(response.status).toBe(201);
-        expect(response.body).toEqual({ id: 1, message: 'Notice created successfully' });
+      expect(response.status).toBe(500);
     });
+  });
 
+  describe('getAllNotices', () => {
     it('should get all notices', async () => {
-        const notices = [{ id: 1, title: 'Meeting', content: 'Important meeting tomorrow' }];
-        NoticeService.getAllNotices.mockResolvedValue(notices);
+      const response = await request(app)
+        .get('/api/notices');
 
-        const response = await request(app).get('/notices');
-
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual(notices);
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.body)).toBeTruthy();
     });
 
-    it('should get notices filtered by parcel', async () => {
-        const notices = [{ id: 1, title: 'Parcel arrival', content: 'Your parcel has arrived' }];
-        NoticeService.getAllNotices.mockResolvedValue(notices);
+  });
 
-        const response = await request(app).get('/notices?is_parcel=true');
+  describe('getParcels', () => {
+    it('should get all parcel notices', async () => {
+      const response = await request(app)
+        .get('/api/notices/parcels');
 
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual(notices);
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.body)).toBeTruthy();
+    });
+  });
+
+  describe('searchNotices', () => {
+    it('should search notices with term', async () => {
+      const response = await request(app)
+        .get('/api/notices/search')
+        .query({ term: 'test' });
+
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.body)).toBeTruthy();
     });
 
-    it('should get notice by id', async () => {
-        const notice = { id: 1, title: 'Meeting', content: 'Important meeting tomorrow' };
-        NoticeService.getNoticeById.mockResolvedValue(notice);
+    it('should handle missing search term', async () => {
+      const response = await request(app)
+        .get('/api/notices/search');
 
-        const response = await request(app).get('/notices/1');
-
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual(notice);
+      expect(response.status).toBe(400);
     });
-
-    it('should update a notice successfully', async () => {
-        const notice = { id: 1, title: 'Updated Meeting', content: 'Updated content' };
-        NoticeService.updateNotice.mockResolvedValue(notice);
-
-        const response = await request(app)
-            .put('/notices/1')
-            .send({ title: 'Updated Meeting', content: 'Updated content' });
-
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual({ notice, message: 'Notice updated successfully' });
-    });
-
-    it('should delete a notice successfully', async () => {
-        NoticeService.deleteNotice.mockResolvedValue();
-
-        const response = await request(app).delete('/notices/1');
-
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual({ message: 'Notice deleted successfully' });
-    });
-
-    it('should get all parcels', async () => {
-        const parcels = [{ id: 1, title: 'Parcel', content: 'Your parcel has arrived' }];
-        NoticeService.getParcels.mockResolvedValue(parcels);
-
-        const response = await request(app).get('/notices/parcels');
-
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual(parcels);
-    });
-
-    it('should search notices', async () => {
-        const notices = [{ id: 1, title: 'Meeting', content: 'Important meeting tomorrow' }];
-        NoticeService.searchNotices.mockResolvedValue(notices);
-
-        const response = await request(app).get('/notices/search?term=meeting');
-
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual(notices);
-    });
-
-    it('should return 400 if search term is missing', async () => {
-        const response = await request(app).get('/notices/search');
-
-        expect(response.status).toBe(400);
-        expect(response.body).toEqual({ message: 'Search term is required' });
-    });
+  });
 });

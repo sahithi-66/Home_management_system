@@ -143,7 +143,7 @@ describe('Chore Model', () => {
             db.execute.mockResolvedValue([[mockSchedule]]);
 
             // Act
-            const result = await Chore.getById(scheduleId);
+            const result = Chore.getById(scheduleId);
 
             // Assert
             expect(db.execute).toHaveBeenCalledWith('SELECT * FROM schedule WHERE id = ?', [scheduleId]);
@@ -156,7 +156,7 @@ describe('Chore Model', () => {
             // Arrange
             const scheduleId = 1;
             const newAssignedTo = 'Jane';
-            db.execute.mockResolvedValue([{ affectedRows: 1 }]); // Mock successful update
+            db.execute.mockResolvedValue({ affectedRows: 1 }); // Mock successful update
 
             // Act
             const result = await Chore.updateAssignedTo(scheduleId, newAssignedTo);

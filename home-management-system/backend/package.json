@@ -5,10 +5,15 @@
   "main": "src/server.js",
   "type": "module",
   "scripts": {
-    "start": "nodemon src/server.js",
-    "dev": "nodemon src/server.js",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --watchAll --verbose",
-    "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage"
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --no-cache",
+    "test:watch": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --watchAll",
+    "test:coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "test:auth": "cross-env NODE_OPTIONS=--experimental-vm-modules jest src/tests/Auth --no-cache",
+    "test:chore": "cross-env NODE_OPTIONS=--experimental-vm-modules jest src/tests/Chore --no-cache",
+    "test:expense": "cross-env NODE_OPTIONS=--experimental-vm-modules jest src/tests/Expense --no-cache",
+    "test:grocery": "cross-env NODE_OPTIONS=--experimental-vm-modules jest src/tests/Grocery --no-cache",
+    "test:notice": "cross-env NODE_OPTIONS=--experimental-vm-modules jest src/tests/Notice --no-cache",
+    "test:user": "cross-env NODE_OPTIONS=--experimental-vm-modules jest src/tests/User --no-cache"
   },
   "keywords": [],
   "author": "",
