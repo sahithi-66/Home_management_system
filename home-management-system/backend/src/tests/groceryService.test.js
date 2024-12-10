@@ -21,6 +21,11 @@ describe('GroceryService', () => {
         it('should throw an error if item name is missing', async () => {
             await expect(GroceryService.createItem({ quantity: 10 })).rejects.toThrow('Item name is required');
         });
+
+        it('should throw an error if itemData is undefined or null', async () => {
+            await expect(GroceryService.createItem(null)).rejects.toThrow('Item name is required');
+            await expect(GroceryService.createItem(undefined)).rejects.toThrow('Item name is required');
+        });
     });
 
     describe('getAllItems', () => {
@@ -31,6 +36,12 @@ describe('GroceryService', () => {
             const result = await GroceryService.getAllItems();
             expect(result).toEqual(items);
             expect(Grocery.findAll).toHaveBeenCalled();
+        });
+
+        it('should handle errors when retrieving items', async () => {
+            Grocery.findAll.mockRejectedValue(new Error('Database error'));
+
+            await expect(GroceryService.getAllItems()).rejects.toThrow('Database error');
         });
     });
 
@@ -48,6 +59,12 @@ describe('GroceryService', () => {
             Grocery.findById.mockResolvedValue(null);
 
             await expect(GroceryService.getItemById(99)).rejects.toThrow('Item not found');
+        });
+
+        it('should handle database errors when retrieving an item by ID', async () => {
+            Grocery.findById.mockRejectedValue(new Error('Database error'));
+
+            await expect(GroceryService.getItemById(1)).rejects.toThrow('Database error');
         });
     });
 
@@ -67,6 +84,17 @@ describe('GroceryService', () => {
             Grocery.update.mockResolvedValue(false);
 
             await expect(GroceryService.updateItem(99, { name: 'Invalid' })).rejects.toThrow('Failed to update item');
+        });
+
+        it('should throw an error if ID or itemData is missing', async () => {
+            await expect(GroceryService.updateItem(null, { name: 'Apple' })).rejects.toThrow('Failed to update item');
+            await expect(GroceryService.updateItem(1, null)).rejects.toThrow('Failed to update item');
+        });
+
+        it('should handle database errors during update', async () => {
+            Grocery.update.mockRejectedValue(new Error('Database error'));
+
+            await expect(GroceryService.updateItem(1, { name: 'Updated Apple' })).rejects.toThrow('Database error');
         });
     });
 
