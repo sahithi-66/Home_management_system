@@ -27,6 +27,17 @@
 ### Authentication
 - Unit tests
 
+## Sahithi Singireddy
+### React JS Screens
+- Login
+- Chore Management
+- Notice Board
+- Expense Management
+- Grocery Management
+  
+### Login Screen
+- Unit tests
+
 ## Naga Surya Prathik Vunnava
 ### Expense Management
 - UI development
