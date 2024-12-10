@@ -1,5 +1,5 @@
 Rohith -
 
-Login Screen UI + Backend
+Login Screen: UI + Backend
 
-Chore Management UI + Backend + Unit tests
+Chore Management: UI + Backend + Unit tests
