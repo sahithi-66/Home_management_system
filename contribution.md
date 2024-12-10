@@ -1,15 +1,28 @@
-Rohith -
+# Project Task Assignments
 
-Login Screen: UI + Backend
+## Rohith
+### Login Screen
+- UI development
+- Backend implementation
 
-Chore Management: UI + Backend + Unit tests
+### Chore Management
+- UI development
+- Backend implementation
+- Unit tests
 
-Deepesh Suranjandass -
+## Deepesh Suranjandass
+### Notice Board
+- UI development
+- Backend integration
+- Unit tests
 
-Notice Board: UI + Backend Integration + Unit Tests
+### Grocery Management
+- UI development
+- Backend implementation (2 routes)
 
-Grocery Management: UI + Backend (2 routes)
+### Expense Management
+- UI migration to Ant Design
+- Unit tests
 
-Expense Management: UI Migration to Ant Design + Unit Tests
-
-Authentication: Unit Tests
+### Authentication
+- Unit tests
