@@ -3,12 +3,12 @@ import Chore  from '../models/Chore.js';
 
 class ChoreController {
     async addChore(req, res, next) {
-    console.log(req.body);
+    // console.log(req.body);
     const { choreName, assignees, frequency, start_date } = req.body;
     //console.log(Chore.fetchChoreCount(choreName));
-    console.log(choreName);
+    // console.log(choreName);
     const choreCount = await Chore.fetchChoreCount(choreName);
-    console.log(choreCount[0].count);
+    // console.log(choreCount[0].count);
     if(choreCount[0].count>0){
         return res.status(400).json({ message: "Chore already exists!!!" });
     }
@@ -33,7 +33,7 @@ class ChoreController {
   }
 
   async swapChoreSchedule(req, res, next) {
-    console.log(req.body);
+    // console.log(req.body);
     const { firstScheduleId, secondScheduleId} = req.body;
    // console.log(Chore.fetchChoreCount(choreName));
    // const choreCount = await Chore.fetchChoreCount(choreName);
@@ -41,8 +41,8 @@ class ChoreController {
         return res.status(400).json({ message: 'Both schedule IDs are required' });
         }
 
-        console.log(firstScheduleId);
-        console.log(secondScheduleId);
+        // console.log(firstScheduleId);
+        // console.log(secondScheduleId);
 
     try {
         const result = await ChoreService.swapSchedules(firstScheduleId, secondScheduleId);
@@ -91,7 +91,7 @@ class ChoreController {
   async getChoreSchedule(req, res, next) {
     try {
         const { id } = req.params;
-        console.log("Chore ID:", id);
+        // console.log("Chore ID:", id);
 
         // Fetch schedule using ChoreService
         const schedule = await ChoreService.getScheduleForChore(id);

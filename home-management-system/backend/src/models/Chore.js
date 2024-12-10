@@ -44,7 +44,7 @@ class Chore {
             schedule.completed || false,       // completed (default to false if not provided)
         ];
 
-        console.log(values);
+        // console.log(values);
 
         const [result] = await db.execute(query, values);
         //console.log("Schedule saved to database:", schedule);
