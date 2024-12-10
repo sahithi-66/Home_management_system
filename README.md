@@ -229,3 +229,198 @@ kill -9 <PID>
 4. Create a pull request
 
 ## License
+
+# Save the generated README content into a markdown file
+
+readme_content = """
+# Home Management System - Frontend
+
+This is the frontend application for the Home Management System, designed to provide a user-friendly interface for managing shared living spaces. It interacts with the backend server to manage notices, expenses, chores, and grocery lists among roommates.
+
+## Features
+
+### 1. Common Notice Board
+- View, post, and manage general announcements
+- Search notices by keywords
+- Track package deliveries visually
+- Access notice history
+
+### 2. Expense Management
+- Add and track shared expenses
+- Split bills with automatic calculations
+- View detailed payment histories
+- Get a summary of who owes whom
+- Download expense reports
+
+### 3. Chores Management
+- Assign chores to roommates
+- View and update completion statuses
+- Set up recurring chores dynamically
+- Track historical chore data
+
+### 4. Grocery List Management
+- Maintain shared grocery lists
+- Add, edit, and delete items
+- Monitor item stock levels
+- Set up low stock alerts for essentials
+
+## Technologies Used
+
+- React (v18+)
+- React Router (v6)
+- Axios (for API calls)
+- Redux (state management - optional, coming soon)
+- Jest (for testing)
+- CSS/SCSS Modules (for styling)
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+- Node.js (v14 or higher)
+- npm (v6 or higher)
+
+## Setup Instructions
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/sahithi-66/Home_management_system.git
+cd Home_management_system/frontend
+```
+
+### 2. Install Dependencies
+```bash
+npm install
+```
+
+### 3. Configure Environment Variables
+Create a `.env` file in the `frontend` directory with the following content:
+```env
+REACT_APP_API_URL=http://localhost:3000/api
+PORT=3001
+```
+
+### 4. Start the Development Server
+```bash
+npm start
+```
+
+The app will be available at [http://localhost:3001](http://localhost:3001).
+
+### 5. Build for Production
+To create an optimized production build:
+```bash
+npm run build
+```
+
+The production build will be available in the `build/` folder.
+
+## Project Structure
+
+```
+frontend/
+├── public/              # Static assets
+├── src/
+│   ├── components/      # Reusable UI components
+│   ├── pages/           # Page components (views)
+│   ├── services/        # API calls and services
+│   ├── hooks/           # Custom hooks
+│   ├── context/         # Context API for state management (optional)
+│   ├── styles/          # Global styles and SCSS modules
+│   ├── App.js           # App entry point
+│   └── index.js         # Main render file
+├── .env                 # Environment variables
+├── package.json         # Project dependencies
+└── README.md            # Documentation
+```
+
+## Available Scripts
+
+In the project directory, you can run:
+
+### `npm start`
+Runs the app in the development mode on [http://localhost:3001](http://localhost:3001).
+
+### `npm test`
+Launches the test runner in interactive watch mode.
+
+### `npm run build`
+Builds the app for production.
+
+### `npm run lint`
+Checks the project for linting errors.
+
+## API Integration
+
+The frontend interacts with the backend through RESTful APIs. Configure the backend base URL in the `.env` file as `REACT_APP_API_URL`.
+
+### Example API Call
+```javascript
+import axios from 'axios';
+
+const apiClient = axios.create({
+  baseURL: process.env.REACT_APP_API_URL,
+});
+
+// Example: Fetch all notices
+export const fetchNotices = async () => {
+  const response = await apiClient.get('/notices');
+  return response.data;
+};
+```
+
+## Testing
+
+### Running Tests
+```bash
+npm test
+```
+
+### Coverage
+Generate a test coverage report:
+```bash
+npm run test:coverage
+```
+
+## Deployment
+
+### Using Vercel
+1. Link your repository to Vercel.
+2. Configure environment variables in the Vercel dashboard.
+3. Deploy.
+
+### Using Netlify
+1. Drag the `build/` folder into Netlify’s drag-and-drop interface.
+2. Set environment variables in the Netlify dashboard.
+
+## Common Issues and Solutions
+
+### Port Already in Use
+If the port `3001` is in use, either stop the conflicting process:
+```bash
+lsof -i :3001
+kill -9 <PID>
+```
+Or change the port in the `.env` file:
+```env
+PORT=3002
+```
+
+### API Connection Issues
+Ensure the backend server is running on `http://localhost:3000`. If it’s hosted on another domain, update the `REACT_APP_API_URL` in the `.env` file.
+
+## Contributing
+
+1. Fork the repository.
+2. Create a new branch (`feature/your-feature`).
+3. Commit your changes.
+4. Push to your branch and create a pull request.
+"""
+
+# File path
+file_path = "/mnt/data/Home_Management_Frontend_README.md"
+
+# Write the content to a file
+with open(file_path, "w") as file:
+    file.write(readme_content)
+
+file_path
