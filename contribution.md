@@ -26,3 +26,12 @@
 
 ### Authentication
 - Unit tests
+
+## Naga Surya Prathik Vunnava
+### Expense Management
+- UI development
+- Backend Implementation (9 service apis)
+- Implemented features (Adding Expenses, Updating Added Expenses,
+-                       Deleting Expenses, Calculating the Pending Splits,
+-                         Clearing Partial and Complete splits, Retrieving and Displaying the cleared splits)
+- Unit tests
