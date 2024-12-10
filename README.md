@@ -230,46 +230,19 @@ kill -9 <PID>
 
 ## License
 
-# Save the generated README content into a markdown file
 
-readme_content = """
 # Home Management System - Frontend
 
 This is the frontend application for the Home Management System, designed to provide a user-friendly interface for managing shared living spaces. It interacts with the backend server to manage notices, expenses, chores, and grocery lists among roommates.
 
-## Features
 
-### 1. Common Notice Board
-- View, post, and manage general announcements
-- Search notices by keywords
-- Track package deliveries visually
-- Access notice history
-
-### 2. Expense Management
-- Add and track shared expenses
-- Split bills with automatic calculations
-- View detailed payment histories
-- Get a summary of who owes whom
-- Download expense reports
-
-### 3. Chores Management
-- Assign chores to roommates
-- View and update completion statuses
-- Set up recurring chores dynamically
-- Track historical chore data
-
-### 4. Grocery List Management
-- Maintain shared grocery lists
-- Add, edit, and delete items
-- Monitor item stock levels
-- Set up low stock alerts for essentials
 
 ## Technologies Used
 
 - React (v18+)
 - React Router (v6)
+- Ant Design
 - Axios (for API calls)
-- Redux (state management - optional, coming soon)
 - Jest (for testing)
 - CSS/SCSS Modules (for styling)
 
@@ -321,11 +294,6 @@ frontend/
 ├── public/              # Static assets
 ├── src/
 │   ├── components/      # Reusable UI components
-│   ├── pages/           # Page components (views)
-│   ├── services/        # API calls and services
-│   ├── hooks/           # Custom hooks
-│   ├── context/         # Context API for state management (optional)
-│   ├── styles/          # Global styles and SCSS modules
 │   ├── App.js           # App entry point
 │   └── index.js         # Main render file
 ├── .env                 # Environment variables
@@ -381,16 +349,6 @@ Generate a test coverage report:
 npm run test:coverage
 ```
 
-## Deployment
-
-### Using Vercel
-1. Link your repository to Vercel.
-2. Configure environment variables in the Vercel dashboard.
-3. Deploy.
-
-### Using Netlify
-1. Drag the `build/` folder into Netlify’s drag-and-drop interface.
-2. Set environment variables in the Netlify dashboard.
 
 ## Common Issues and Solutions
 
@@ -415,12 +373,3 @@ Ensure the backend server is running on `http://localhost:3000`. If it’s hoste
 3. Commit your changes.
 4. Push to your branch and create a pull request.
 """
-
-# File path
-file_path = "/mnt/data/Home_Management_Frontend_README.md"
-
-# Write the content to a file
-with open(file_path, "w") as file:
-    file.write(readme_content)
-
-file_path
