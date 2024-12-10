@@ -13,7 +13,7 @@
 ## Deepesh Suranjandass
 ### Notice Board
 - UI development
-- Backend integration
+- Backend Implementation
 - Unit tests
 
 ### Grocery Management
