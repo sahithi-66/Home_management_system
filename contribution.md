@@ -54,9 +54,9 @@
 - Backend implementation and authentication using JWT
 - Unit tests
 
-## Grocery Management
+### Grocery Management
 - Backend implementation of funtionality
 - Unit tests
 
-## Unit tests
+### Unit tests
 - Added initial unit tests (basic versions) for controllers, models , routes and services for each of features : Login, Grocery, Expense split, Chore Management.
