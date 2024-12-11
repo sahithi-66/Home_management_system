@@ -40,9 +40,23 @@
 
 ## Naga Surya Prathik Vunnava
 ### Expense Management
+
+
 - UI development
 - Backend Implementation (9 service apis)
 - Implemented features (Adding Expenses, Updating Added Expenses,
 -                       Deleting Expenses, Calculating the Pending Splits,
 -                         Clearing Partial and Complete splits, Retrieving and Displaying the cleared splits)
 - Unit tests
+
+## Shantanu Todmal
+### Login 
+- Backend implementation and authentication using JWT
+- Unit tests
+
+## Grocery Management
+- Backend implementation of funtionality
+- Unit tests
+
+## Unit tests
+- Added initial unit tests (basic versions) for controllers, models , routes and services for each of features : Login, Grocery, Expense split, Chore Management.
